@@ -1,4 +1,4 @@
-\title{Schoof's Algorithm}
+# Schoof's Algorithm
 
 ## Groupe des points d’une courbe elliptique
 ## Fonctions et diviseurs

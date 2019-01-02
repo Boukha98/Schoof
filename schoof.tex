@@ -1,27 +1,62 @@
-\documentclass[12pt]{article}
+\documentclass[letterpaper, 12pt]{article}
 \usepackage[french]{babel}
 \usepackage[utf8x]{inputenc}
 \usepackage{amsmath}
 \usepackage{graphicx}
 \usepackage[colorinlistoftodos]{todonotes}
+\usepackage[margin=1in,letterpaper]{geometry}
+
+\usepackage{lmodern}
+\usepackage{amssymb}
+\usepackage{mathrsfs}
+\usepackage[T1]{fontenc}
+\usepackage{pifont}
+\usepackage{enumitem}
+\usepackage{color}
+\usepackage{algorithm2e}
+\usepackage{stmaryrd}
+\usepackage{graphicx}
+\usepackage{verbatim}
+\usepackage{fancyhdr}
+\usepackage{tabularx}
+\usepackage{listings}
+\usepackage{fancyhdr}
+\usepackage{listings}
+\usepackage{hyperref}
+
+
+\newcommand{\Z}{\mathbb{Z}}
+\newcommand{\F}{\mathbb{F}}
+\newcommand{\N}{\mathbb{N}}
+\newcommand{\R}{\mathbb{R}}
 
 \begin{document}
 
 \begin{titlepage}
 
-\newcommand{\HRule}{\rule{\linewidth}{0.5mm}}
+\newcommand{\HRule}{\rule{\linewidth}{0.5mm}} % Defines a new command for the horizontal lines, change thickness here
 
-\center
+\center 
+ 
+%----------------------------------------------------------------------------------------
+%	HEADING SECTIONS
+%----------------------------------------------------------------------------------------
 
-\textsc{\LARGE Université de Versailles}\\[1.5cm] 
-\textsc{\Large Projet d'étude }\\[0.5cm] 
-\textsc{\large Master d'algèbre appliquée à la cryptographie}\\[0.5cm] 
+\textsc{\LARGE Université de Versailles}\\[1.5cm] % Name of your university/college
+\textsc{\Large Projet d'étude }\\[0.5cm] % Major heading such as course name
+\textsc{\large Master d'algèbre appliquée à la cryptographie}\\[0.5cm] % Minor heading such as course title
 
+%----------------------------------------------------------------------------------------
+%	TITLE SECTION
+%----------------------------------------------------------------------------------------
 
 \HRule \\[0.4cm]
-{ \huge \bfseries Algorithme de comptage de points de Schoof}\\[0.1cm] 
+{ \huge \bfseries Algorithme de comptage de points de Schoof}\\[0.1cm] % Title of your document
 \HRule \\[1.5cm]
  
+%----------------------------------------------------------------------------------------
+%	AUTHOR SECTION
+%----------------------------------------------------------------------------------------
 
 \begin{minipage}{0.5\textwidth}
 \begin{flushleft} 
@@ -35,19 +70,77 @@ Abdessamad \textsc{Fazzat}
 \begin{minipage}{0.4\textwidth}
 \begin{flushright} 
 \emph{Supervisé par:} \\
-Luca \textsc{De Feo} 
+Prof. Luca \textsc{De Feo} 
 \end{flushright}
 \end{minipage}\\[2cm]
 
 
-\includegraphics[scale=0.15]{versailles.jpg}
- 
+%----------------------------------------------------------------------------------------
+%	DATE SECTION
+%----------------------------------------------------------------------------------------
+\center {\large \today}\\[2cm]
+%----------------------------------------------------------------------------------------
+%	LOGO SECTION
 %----------------------------------------------------------------------------------------
 
-\vfill
+\includegraphics[scale=0.15]{versailles.jpg} 
+%----------------------------------------------------------------------------------------
+
+
+\vfill %
 
 \end{titlepage}
+\tableofcontents
+\newpage
 
+\begin{abstract}
+Résumé du projet
+\end{abstract}
+
+\section{Introduction}
+Introduction aux courbes elliptiques et application à la cryptographie
+
+\section{Courbes elliptiques}
+    \subsection{Courbes elliptiques}
+    
+    \subsection{Loi de groupe}
+    
+    \subsection{Endomorphisme de Frobenius}
+    
+    \subsection{Nombre de points}
+\section{Arithmétique dans un corps fini}
+    \subsection{Algorithme d'Euclide}
+    \subsection{Algorithme d'Euclide étendu}
+    \subsection{Inversion modulaire}
+    \subsection{Exponentiation modulaire}
+    \subsection{Racine carrée modulaire}
+    \subsection{Théorème Chinois des restes}
+
+\section{Cryptographie sur les courbes elliptiques}
+    \subsection{Problème du logarithme discret}
+    
+\section{Algorithme de Schoof}
+    \subsection{Polynômes de division}
+    \subsection{Points de torsion}
+    \subsection{Une borne sur le nombre de points: Théorème de Hasse}
+    \subsection{Algorithme de comtage de points de Schoof}
+    \subsection{Algorithme de Schoof-Elkies-Atkin}
+    
+\section{Implémentation de l'algorithme de Schoof}
+    \subsection{Complexité}
+    
+\newpage
+\newpage
+\begin{thebibliography}{99}
+\item R. Schoof. Elliptic curves over finite fields and the computation of square roots mod p. Mathematics of computation 44.170 (1985):483-494.
+
+\item R. Crandall, C. Pomerance. Prime numbers: a computational perspective. Vol. 182. Springer Science & Business Media, 2006. Côte 512.7 CRA. §7.5.2.
+
+\item I. F. Blake, G. Seroussi, N. Smart. Elliptic curves in cryptography. Vol. 265. Cambridge university press, 1999. Côte 005.82 BLA. Chapitre VII.
+
+\item P. Guillot: Introduction aux courbes elliptiques pour la cryptographie.
+\end{thebibliography}
+\end{document}
 
 \begin{abstract}
 Your abstract.

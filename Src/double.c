@@ -55,5 +55,3 @@ int main(){
 	fmpz_clear(p);
 	return 0;
 }
-	
-	

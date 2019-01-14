@@ -13,7 +13,7 @@ typedef struct{
 int main(){
 	// Déclaration des variables
 	point P, Q; // Points P et Q
-       	fq_t m, m1, a, tmp1, tmp2;
+    	fq_t m, m1, a, tmp1, tmp2;
 	fmpz_t p; // Premier
 	fmpz_init(p); fmpz_set_ui(p, 5);
 	slong d = 2;
@@ -27,7 +27,7 @@ int main(){
 	fq_init(Q.x, ctx); fq_init(Q.y, ctx);
 	fq_init(m, ctx); fq_init(m1, ctx);
 	fq_init(tmp1, ctx); fq_init(tmp2, ctx);
-       	fq_init(a, ctx);
+    fq_init(a, ctx);
 	
 	// Deux points de la courbe y^2 = x^3 + a*x + b
 	fq_set_ui(P.x, 1, ctx); fq_set_ui(P.y, 2, ctx);

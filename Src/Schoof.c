@@ -81,7 +81,7 @@ void main(int argc, char** argv){
 	
 	fq_set_si(X,1,ctx);fq_set_si(Y,1,ctx);fq_set_si(a,-3,ctx);fq_set_si(b,3,ctx);
 	
-	Poly_division(8,a,b,X,Y,ctx);
+	Poly_division(8,a,b,X,Y,ctx); /* Psi8(1,1)=2 */
 
 	fq_clear(X,ctx);fq_clear(Y,ctx);fq_clear(a,ctx);fq_clear(b,ctx);
 	fq_ctx_clear(ctx);fmpz_clear(p);

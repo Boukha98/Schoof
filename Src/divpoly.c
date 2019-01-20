@@ -4,6 +4,9 @@
 #include<flint/fmpz.h>
 #include<flint/fq.h>
 #include<gmp.h>
+#include<flint/fq_poly.h>
+//#include"schoof.h"
+
 
 /* Polynômes de Division:
  * (1) Le l-ième polynôme de division Psi_l a pour racines 
@@ -16,23 +19,44 @@
  *
  * Pour calculer [i]P
 */
+typedef struct{
+	fq_t x, y; // Coordonnées du point
+}point;
+
+//Courbe elliptique
+typedef struct{
+	fmpz_t p;
+	fq_t a, b; // y^2 = x^3+a*x+b mod p
+}elliptic_curve;
 
 void div_poly(fq_poly_t *Psi, elliptic_curve E, 
-		unsigned long k, fq_ctx_t ctx){
+		signed long k, fq_ctx_t ctx){
 	fq_t tmp, tmp1;
+	fq_poly_t poly;
+	fq_poly_init(poly, ctx);
+	fq_init(tmp, ctx);fq_init(tmp1, ctx);
 	slong i,m;
+	//initialisation de P
+	//fq_init(P.x, ctx);
+	//fq_init(P.y, ctx);
+	
 	// On initialise Psi_0...4
-	for(i=0; i<3; i++){
+	for(i = 0; i < k + 1; i++){
+ 		fq_poly_init(Psi[i], ctx);
+	}
+	/*for(i=0; i<3; i++){
 	     	fq_set_ui(tmp, i, ctx);
        		fq_poly_set_fq(Psi[i], tmp, ctx);
  	}
-	
-	/*fq_poly_zero(Psi[0], ctx); //Psi_0 = 0
+	*/
+	fq_poly_zero(Psi[0], ctx); //Psi_0 = 0
 	fq_poly_one(Psi[1], ctx); //Psi_1 = 1
-	fq_poly_set_fq(Psi[2], 2, ctx); //Psi_2 = 2*/
+	fq_set_ui(tmp, 2, ctx);
+	fq_poly_set_fq(Psi[2], tmp, ctx); //Psi_2 = 2 
 	
+	//printf("poly\n");
 	//Psi_3 = 3x^4+6ax^2+12bx-a^2
-	fq_set_ui(tmp, 3, ctx);
+	fq_set_ui(tmp1, 3, ctx);
 	fq_poly_set_coeff(Psi[3], 4, tmp, ctx);//3*x^4
 
 	fq_mul_ui(tmp, E.a, 6, ctx);//6*a
@@ -69,8 +93,9 @@ void div_poly(fq_poly_t *Psi, elliptic_curve E,
 	fq_mul_ui(tmp, tmp, 4, ctx);
 	fq_poly_set_coeff(Psi[4], 0, tmp, ctx);
 	
+	fq_clear(tmp, ctx);fq_clear(tmp1, ctx);
 	//Récurrence
-	for(i=5; i<k; i++){
+	for(i=5; i<k+1; i++){
 		//Cas i pair: i=2*m
 		if(!(i&1)){
 			m = i>>1;
@@ -97,4 +122,38 @@ void div_poly(fq_poly_t *Psi, elliptic_curve E,
 			fq_poly_sub(Psi[i], Psi[i], poly, ctx);
 		}
 	}
-}	
+	fq_clear(tmp1, ctx); fq_clear(tmp, ctx);
+	fq_poly_clear(poly, ctx);
+	fq_ctx_clear(ctx);
+}
+
+//Calcul de [n]P
+//void scalar_mult(point P, fq_t n, fq_ctx_t ctx){}
+
+int main(){
+	fq_poly_t * Psi; elliptic_curve E;
+	signed long k = 4;
+	const char* var = "X";
+	fmpz_t p; // Premier
+	fq_ctx_t ctx;
+	fmpz_set_ui(p, 101);
+	fq_ctx_init(ctx, p, 1, var);
+	
+	fq_init(E.a, ctx); fq_init(E.b, ctx);
+	fq_set_ui(E.a, 2, ctx);
+	fq_set_ui(E.b, 3, ctx);
+	slong i;
+	Psi = malloc((k + 2) * sizeof(fq_poly_t));
+	div_poly(Psi, E, k, ctx);
+	for(i = 0; i < k+1; i++){
+		fq_poly_print_pretty(Psi[i], "X", ctx) ;flint_printf("\n");
+	}
+	fmpz_clear(p);
+	fq_ctx_clear(ctx);
+	for(i = 0; i < k + 1; i++){
+ 		fq_poly_clear(Psi[i], ctx);
+	}	
+	free(Psi);
+	return 0;
+}
+	

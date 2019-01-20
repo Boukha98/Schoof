@@ -4,6 +4,7 @@
 #include<flint/fmpz.h>
 #include<flint/fq.h>
 #include<gmp.h>
+#include<flint/fq_poly.h>
 
 //Point
 typedef struct{
@@ -20,7 +21,7 @@ typedef struct{
 typedef struct{
 	int deg; // Degré du polynome
 	int *coef; // Tableau des coefficients
-}poly;
+}polynomial;
 
 // delta = -(4*a^3 + 27*b^2) mod p
 void delta_ec(elliptic_curve E){
@@ -38,4 +39,10 @@ void delta_ec(elliptic_curve E){
 	fmpz_mod(delta, delta, E.p);
 }
 
+void is_ec(elliptic_curve E){
+	
+}
+void fq_init_curve(elliptic_curve E){ // E={a,b,p}
+	fq_
+}
 

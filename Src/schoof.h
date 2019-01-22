@@ -42,7 +42,9 @@ void delta_ec(elliptic_curve E){
 void is_ec(elliptic_curve E){
 	
 }
-void fq_init_curve(elliptic_curve E){ // E={a,b,p}
-	fq_
+void fq_init_curve(elliptic_curve E, fmpz_t a, 
+					fmpz_t b,  fq_ctx_t ctx){ // E={a,b,p}
+	fq_init(E.a, ctx); fq_init(E.b, ctx);
+	fq_init(E.p, ctx);
 }
 

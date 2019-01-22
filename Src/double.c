@@ -12,7 +12,7 @@ int main(){
 	fq_t m, m1, a;
 	fmpz_t p;	
 	fmpz_init(p);fmpz_set_ui(p, 5);
-	slong d = 2;
+	slong d = 1;
 	const char* var = "0";
 	
 	fq_ctx_t ctx;
@@ -22,7 +22,7 @@ int main(){
 	fq_init(X,ctx);fq_init(Y,ctx);fq_init(m,ctx); fq_init(a,ctx);
 	fq_init(X1, ctx);fq_init(X2, ctx);fq_init(Y1,ctx);fq_init(m1, ctx);
 
-	fq_set_ui(X,1,ctx);fq_set_ui(Y,1,ctx); fq_set_ui(a,2,ctx);
+	fq_set_ui(X,3,ctx);fq_set_ui(Y,1,ctx); fq_set_ui(a,2,ctx);
 	fq_set(X1,X,ctx);fq_set(X2,X,ctx);fq_set(Y1,Y,ctx);
 
 	fq_sqr(X, X, ctx);

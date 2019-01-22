@@ -68,7 +68,7 @@ void Poly_division(int m, fq_t a, fq_t b, fq_t X, fq_t Y, fq_ctx_t ctx){
 	for(i=0;i<=m+1;i++){fq_clear(Psi[i],ctx);}
 }
 
-void main(int argc, char** argv){
+int main(){
 	fmpz_t p;fmpz_init(p);fmpz_set_ui(p,5);
 	signed long d = 1;
 	char *var="";
@@ -85,4 +85,5 @@ void main(int argc, char** argv){
 
 	fq_clear(X,ctx);fq_clear(Y,ctx);fq_clear(a,ctx);fq_clear(b,ctx);
 	fq_ctx_clear(ctx);fmpz_clear(p);
+	return 0;
 }

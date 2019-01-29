@@ -7,7 +7,11 @@
 #include<gmp.h>
 #include<flint/fq_poly.h>
 
+<<<<<<< HEAD
 void poly_div(int m, fq_t a, fq_t b, fq_t Y, fq_ctx_t ctx){
+=======
+void poly_div(int m, fq_t a, fq_t b, fq_t X, fq_t Y, fq_ctx_t ctx){
+>>>>>>> 353c501e729e51e1be2166d4d029c8bc87b972fc
 	int n=m>>1; int i=0; int k=5;
 	if(m>5){k=m+1;}
 	fq_poly_t Psi[k];
@@ -78,6 +82,10 @@ void poly_div(int m, fq_t a, fq_t b, fq_t Y, fq_ctx_t ctx){
 
 /*
 nP
+<<<<<<< HEAD
+=======
+
+>>>>>>> 353c501e729e51e1be2166d4d029c8bc87b972fc
 fq_t X,Y,a,b,Xn,Yn,P1,P2,P3,P4,c1,c2,c3;
 	
 	fq_init(X,ctx);fq_init(Y,ctx);fq_init(a,ctx);fq_init(b,ctx);fq_init(Xn,ctx);
@@ -96,10 +104,18 @@ fq_t X,Y,a,b,Xn,Yn,P1,P2,P3,P4,c1,c2,c3;
 	
 	fq_print(Xn,ctx); flint_printf("\n");
 	fq_print(Yn,ctx); flint_printf("\n");
+<<<<<<< HEAD
+=======
+
+>>>>>>> 353c501e729e51e1be2166d4d029c8bc87b972fc
 	fq_clear(X,ctx);fq_clear(Y,ctx);fq_clear(a,ctx);fq_clear(b,ctx);
 	fq_clear(Xn,ctx);fq_clear(Yn,ctx);fq_clear(P1,ctx);fq_clear(P2,ctx);
 	fq_clear(P3,ctx);fq_clear(P4,ctx);fq_clear(c1,ctx);fq_clear(c2,ctx);
 	fq_clear(c3,ctx);
+<<<<<<< HEAD
+=======
+
+>>>>>>> 353c501e729e51e1be2166d4d029c8bc87b972fc
 */
 
 typedef struct{
@@ -140,6 +156,7 @@ int main(){
 	fq_ctx_t ctx;
 	fq_ctx_init (ctx, p, d, var);
 	
+<<<<<<< HEAD
 	fq_t a,b,Y;fq_init(a,ctx);fq_init(b,ctx);fq_init(Y,ctx);
 	
 	fq_set_si(a,1,ctx);fq_set_si(b,0,ctx);
@@ -148,6 +165,16 @@ int main(){
 	poly_div(3,a,b,Y,ctx);
 	
 	fq_clear(a,ctx);fq_clear(b,ctx);fq_clear(Y,ctx);
+=======
+	fq_t a,b,X,Y;fq_init(a,ctx);fq_init(b,ctx);fq_init(X,ctx);fq_init(Y,ctx);
+	
+	fq_set_si(a,-3,ctx);fq_set_si(b,3,ctx);fq_set_si(X,1,ctx);
+	fq_set_si(Y,1,ctx);
+	
+	poly_div(3,a,b,X,Y,ctx);
+	
+	fq_clear(a,ctx);fq_clear(b,ctx);fq_clear(X,ctx);fq_clear(Y,ctx);
+>>>>>>> 353c501e729e51e1be2166d4d029c8bc87b972fc
 	fq_ctx_clear(ctx);fmpz_clear(p);
 	return 0;
 }

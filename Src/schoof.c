@@ -135,16 +135,16 @@ void schoof(elliptic_curve E, fq_ctx_t ctx, fmpz_t q, fmpz_t c){
     	fq_poly_gcd(poly, poly, Psi[l], ctx);
     	//Cas ou pgcd \neq 1
     	if(!fq_poly_is_one(poly, ctx)){
-		if(fmpz_jacobi(q, l) == -1){//q n'est pas un résidu quadratique
-                	fmpz_set_si(tmp, 0); // tmp = 0
-                	fmpz_CRT(t, t, a, tmp, l, 1); // TRC: t=0 mais on fait le calcul
-            	}
-            	//On cherche w tel que q = w²[l]
-            	else{
-            		fmpz_sqrtmod(w, q, l);
-            		//Cas w impair
-            		if(w&1){
-    				fq_poly_sqr(poly, Psi[w], ctx);
+		    if(fmpz_jacobi(q, l) == -1){//q n'est pas un résidu quadratique
+                fmpz_set_si(tmp, 0); // tmp = 0
+                fmpz_CRT(t, t, a, tmp, l, 1); // TRC: t=0 mais on fait le calcul
+            }
+            //On cherche w tel que q = w²[l]
+            else{
+                fmpz_sqrtmod(w, q, l);
+                //Cas w impair
+                if(w&1){
+                    fq_poly_sqr(poly, Psi[w], ctx);
     				fq_poly_mul(poly, poly, Phi1, ctx);
     				fq_poly_mul(poly1, Psi[w-1], Psi[w+1], ctx);
     				fq_poly_mul(poly1, poly1, y2, ctx);
@@ -159,16 +159,16 @@ void schoof(elliptic_curve E, fq_ctx_t ctx, fmpz_t q, fmpz_t c){
     				fq_poly_add(poly, poly, poly1, ctx);
     			}
     			//Calcul du pgcd
-            		fq_poly_gcd(poly, poly, Psi[l], ctx);
-            		//Cas pgcd=1: t=0
-            		if(fq_poly_is_one(poly, ctx)){
-            			fq_set_ui(t, 0, ctx);
-            		}
-            		//Cas pgcd \neq 1
-            		else{
-            			//Cas w impair
-            			if(w&1){
-            				fmpz_add_ui(tmp, q, 3);
+                fq_poly_gcd(poly, poly, Psi[l], ctx);
+                //Cas pgcd=1: t=0
+                if(fq_poly_is_one(poly, ctx)){
+                    fq_set_ui(t, 0, ctx);
+            	}
+            	//Cas pgcd \neq 1
+            	else{
+                    //Cas w impair
+                    if(w&1){
+                        fmpz_add_ui(tmp, q, 3);
     					fmpz_divexact_si(tmp, tmp, 2);
     				}
     				//Cas w pair
@@ -194,14 +194,14 @@ void schoof(elliptic_curve E, fq_ctx_t ctx, fmpz_t q, fmpz_t c){
     				fq_poly_add(poly, poly, poly1, ctx);
     				
     				//Calcul du pgcd
-            			fq_poly_gcd(poly, poly, Psi[l], ctx);
+                    fq_poly_gcd(poly, poly, Psi[l], ctx);
             		
     				fmpz_mul_ui(tmp, w, 2);//tmp=2*w
     				//pgcd = 1: t = -2w[l]
     				//pgcd \neq 1: t = 2w[l]  
     				if(fq_poly_is_one(poly, ctx)){
-            				fmpz_negmod(tmp, tmp, l);
-            			}
+                        fmpz_negmod(tmp, tmp, l);
+            		}
       				fmpz_CRT(t, t, a, tmp, l, 1);//TRC
             	}
             }
@@ -209,7 +209,7 @@ void schoof(elliptic_curve E, fq_ctx_t ctx, fmpz_t q, fmpz_t c){
     //Cas ou Phi^2(P) \neq +-[q_bar]P
     else{
     	//Construction de X^q² + X^q + X = Phi3
-    		fq_poly_t Phi3;
+        fq_poly_t Phi3;
 		fq_poly_init(Phi3, ctx);
 		fq_set_ui(tmp, 1, ctx);
 		fq_poly_set_coeff(Phi3, fmpz_get_si(q)*fmpz_get_si(q), tmp, ctx);

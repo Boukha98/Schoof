@@ -192,7 +192,7 @@ void schoof(elliptic_curve E, fq_ctx_t ctx, fmpz_t q, fmpz_t c){
     					fmpz_sub_ui(tmp, q, 1);
     					fmpz_divexact_si(tmp, tmp, 2);
     				}
-    				fmpz_get_ui(tmp, tmp);
+    				tmp = fmpz_get_ui(tmp);
     				fq_poly_pow(poly, y2, tmp, ctx);
     				fq_poly_pow(poly1, Psi[w], 3, ctx);
     				fq_poly_mul(poly, poly, poly1, ctx);
@@ -232,9 +232,48 @@ void schoof(elliptic_curve E, fq_ctx_t ctx, fmpz_t q, fmpz_t c){
 		fq_poly_set_coeff(Phi3, fmpz_get_si(q), tmp, ctx);
 		fq_poly_set_coeff(Phi3, 1, tmp, ctx);
 		
-		for(j = 1; j <= (l-1)>>2; j++){
-			 //Calcul de beta^2
+		fq_poly_t beta2, alpha;
+		fq_poly_init(beta2, ctx);fq_poly_init(alpha, ctx);
 		
+		for(j = 1; j <= (l-1)>>2; j++){
+			//Calcul de beta^2
+			fq_poly_mul(poly, Psi[q_bar-1], Psi[q_bar+1], ctx);
+			fq_poly_sqr(poly1, Psi[q_bar], ctx);
+			fq_poly_mul(poly1, poly1, Phi2, ctx);
+			fq_poly_add(poly, poly, poly1, ctx);
+			fq_poly_sqr(poly, poly, ctx);
+			
+			fq_poly_sqr(poly1, Psi[q_bar], ctx);
+			fq_poly_mul(poly1, poly1, y2, ctx);
+			fq_poly_mul(poly, poly, poly1, ctx);
+			fq_set_ui(tmp1, 16, ctx);
+			fq_poly_scalar_mul_fq(beta2, poly, tmp1, ctx);
+			
+			//Calcul de alpha
+			fq_poly_sqr(poly, Psi[q_bar-1], ctx);
+			fq_mul_mul(poly, poly, Psi[q_bar+2], ctx);
+			
+			fq_poly_sqr(poly1, Psi[q_bar+1], ctx);
+			fq_mul_mul(poly1, poly, Psi[q_bar-1], ctx);
+			
+			fq_poly_sub(poly, poly, poly1, ctx);
+			
+			fq_set_si(tmp1, 3, ctx);
+			fq_poly_pow(poly1, Psi[q_bar], tmp1, ctx);
+			
+			fmpz_pow_si(tmp, q_bar, 2);
+			fmpz_add_si(tmp, tmp, 1);
+			fmpz_divexact_si(tmp, tmp, 2);
+			
+			fq_poly_pow(alpha, y2, fmpz_get_si(tmp), ctx);
+			fq_poly_mul(alpha, alpha, poly1, ctx);
+			fq_set_si(tmp1, 4, ctx);
+			fq_poly_scalar_mul(alpha, alpha, 4, ctx);
+			
+			fq_poly_sub(alpha, poly, alpha, ctx);
+			
+		}
+			
     	
     	
     	

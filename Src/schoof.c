@@ -161,7 +161,7 @@ void schoof(elliptic_curve E, fq_ctx_t ctx, fmpz_t q, fmpz_t c){
             	//Cas w impair
             	if(w&1){
     				fq_poly_sqr(poly, Psi[w], ctx);
-    				fq_poly_mul(poly, poly, Phi2, ctx);
+    				fq_poly_mul(poly, poly, Phi1, ctx);
     				fq_poly_mul(poly1, Psi[w-1], Psi[w+1], ctx);
     				fq_poly_mul(poly1, poly1, y2, ctx);
     				fq_poly_add(poly, poly, poly1, ctx);
@@ -169,7 +169,7 @@ void schoof(elliptic_curve E, fq_ctx_t ctx, fmpz_t q, fmpz_t c){
     			//Cas w pair
     			else{
     				fq_poly_sqr(poly, Psi[w], ctx);
-    				fq_poly_mul(poly, poly, Phi2, ctx);
+    				fq_poly_mul(poly, poly, Phi1, ctx);
     				fq_poly_mul(poly, poly, y2, ctx);
     				fq_poly_mul(poly1, Psi[w-1], Psi[w+1], ctx);
     				fq_poly_add(poly, poly, poly1, ctx);
@@ -224,6 +224,17 @@ void schoof(elliptic_curve E, fq_ctx_t ctx, fmpz_t q, fmpz_t c){
     }
     //Cas ou Phi^2(P) \neq +-[q_bar]P
     else{
+    	//Construction de X^q² + X^q + X = Phi3
+    	fq_poly_t Phi3;
+		fq_poly_init(Phi3, ctx);
+		fq_set_ui(tmp, 1, ctx);
+		fq_poly_set_coeff(Phi3, fmpz_get_si(q)*fmpz_get_si(q), tmp, ctx);
+		fq_poly_set_coeff(Phi3, fmpz_get_si(q), tmp, ctx);
+		fq_poly_set_coeff(Phi3, 1, tmp, ctx);
+		
+		for(j = 1; j <= (l-1)>>2; j++){
+			 //Calcul de beta^2
+		
     	
     	
     	

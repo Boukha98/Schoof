@@ -19,22 +19,6 @@
 
 */
 
-void point_scalar_mul(point P, fmpz_t n, fq_ctx_t ctx, slong k){
-	fq_init_point(P, ctx);
-	fq_init_curve(E, ctx);
-	fq_poly_t *Psi; fq_poly_t poly;
-	slong i;
-	for(i = 0; i < k + 1; i++){
- 		fq_poly_init(Psi[i], ctx);
-	}
-
-	div_poly(Psi, E, k, ctx, P);
-
-	fq_poly_mul(poly, Psi[n-1], Psi[n+1], ctx);
-
-
-}
-
 void fnext_prime(fmpz_t res, fmpz_t l){
 	fmpz_add_ui(res, l, 2); // res = l+2
 	while(!fmpz_is_prime(res)){ // 0 ou -1

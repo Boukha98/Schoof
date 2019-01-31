@@ -19,22 +19,6 @@
 
 */
 
-void point_scalar_mul(point P, fmpz_t n, fq_ctx_t ctx, slong k){
-	fq_init_point(P, ctx);
-	fq_init_curve(E, ctx);
-	fq_poly_t *Psi; fq_poly_t poly;
-	slong i;
-	for(i = 0; i < k + 1; i++){
- 		fq_poly_init(Psi[i], ctx);
-	}
-
-	div_poly(Psi, E, k, ctx, P);
-
-	fq_poly_mul(poly, Psi[n-1], Psi[n+1], ctx);
-
-
-}
-
 void fnext_prime(fmpz_t res, fmpz_t l){
 	fmpz_add_ui(res, l, 2); // res = l+2
 	while(!fmpz_is_prime(res)){ // 0 ou -1
@@ -146,6 +130,7 @@ void schoof(elliptic_curve E, fq_ctx_t ctx, fmpz_t q, fmpz_t c){
      		--> q_bar RC ou non?		(Jacobi)
    		2) Sinon (pgcd=1): alors t \neq 0[l], on peut appliquer les formules
         	d'addition de deux points distincts[ (Phi_l)^2(x,y) + q(x,y) ]
+<<<<<<< HEAD
     */
 
     fq_poly_gcd(poly, poly, Psi[l], ctx);
@@ -186,6 +171,27 @@ void schoof(elliptic_curve E, fq_ctx_t ctx, fmpz_t q, fmpz_t c){
             	if(w&1){
            			fmpz_add_ui(tmp, q, 3);
     				fmpz_divexact_si(tmp, tmp, 2);
+=======
+    	*/
+    
+    	fq_poly_gcd(poly, poly, Psi[l], ctx);
+    	//Cas ou pgcd \neq 1
+    	if(!fq_poly_is_one(poly, ctx)){
+		    if(fmpz_jacobi(q, l) == -1){//q n'est pas un résidu quadratique
+                fmpz_set_si(tmp, 0); // tmp = 0
+                fmpz_CRT(t, t, a, tmp, l, 1); // TRC: t=0 mais on fait le calcul
+            }
+            //On cherche w tel que q = w²[l]
+            else{
+                fmpz_sqrtmod(w, q, l);
+                //Cas w impair
+                if(w&1){
+                    fq_poly_sqr(poly, Psi[w], ctx);
+    				fq_poly_mul(poly, poly, Phi1, ctx);
+    				fq_poly_mul(poly1, Psi[w-1], Psi[w+1], ctx);
+    				fq_poly_mul(poly1, poly1, y2, ctx);
+    				fq_poly_add(poly, poly, poly1, ctx);
+>>>>>>> 76473c80101d3089cc4ceb2176ba6ee2c0a72dab
     			}
     			//Cas w pair
     			else{
@@ -210,6 +216,7 @@ void schoof(elliptic_curve E, fq_ctx_t ctx, fmpz_t q, fmpz_t c){
     			fq_poly_add(poly, poly, poly1, ctx);
     			
     			//Calcul du pgcd
+<<<<<<< HEAD
        			fq_poly_gcd(poly, poly, Psi[l], ctx);
             		
     			fmpz_mul_ui(tmp, w, 2);//tmp=2*w
@@ -217,6 +224,52 @@ void schoof(elliptic_curve E, fq_ctx_t ctx, fmpz_t q, fmpz_t c){
     			//pgcd \neq 1: t = 2w[l]  
     			if(fq_poly_is_one(poly, ctx)){
             		fmpz_negmod(tmp, tmp, l);
+=======
+                fq_poly_gcd(poly, poly, Psi[l], ctx);
+                //Cas pgcd=1: t=0
+                if(fq_poly_is_one(poly, ctx)){
+                    fq_set_ui(t, 0, ctx);
+            	}
+            	//Cas pgcd \neq 1
+            	else{
+                    //Cas w impair
+                    if(w&1){
+                        fmpz_add_ui(tmp, q, 3);
+    					fmpz_divexact_si(tmp, tmp, 2);
+    				}
+    				//Cas w pair
+    				else{
+    					fmpz_sub_ui(tmp, q, 1);
+    					fmpz_divexact_si(tmp, tmp, 2);
+    				}
+    				tmp = fmpz_get_ui(tmp);
+    				fq_poly_pow(poly, y2, tmp, ctx);
+    				fq_poly_pow(poly1, Psi[w], 3, ctx);
+    				fq_poly_mul(poly, poly, poly1, ctx);
+    				fq_set_ui(tmp1, 4, ctx);
+    				fq_poly_scalar_mul_fq(poly, poly, 4, ctx);
+    				
+    				fq_poly_pow(poly1, Psi[w+2], 2, ctx);
+    				fq_poly_mul(poly1, poly1, Psi[w-1], ctx);
+    				
+    				fq_poly_sub(poly, poly, poly1, ctx);
+    				
+    				fq_poly_pow(poly1, Psi[w-2], 2, ctx);
+    				fq_poly_mul(poly1, poly1, Psi[w+1], ctx);
+    				
+    				fq_poly_add(poly, poly, poly1, ctx);
+    				
+    				//Calcul du pgcd
+                    fq_poly_gcd(poly, poly, Psi[l], ctx);
+            		
+    				fmpz_mul_ui(tmp, w, 2);//tmp=2*w
+    				//pgcd = 1: t = -2w[l]
+    				//pgcd \neq 1: t = 2w[l]  
+    				if(fq_poly_is_one(poly, ctx)){
+                        fmpz_negmod(tmp, tmp, l);
+            		}
+      				fmpz_CRT(t, t, a, tmp, l, 1);//TRC
+>>>>>>> 76473c80101d3089cc4ceb2176ba6ee2c0a72dab
             	}
       			fmpz_CRT(t, t, a, tmp, l, 1);//TRC
             }
@@ -225,7 +278,11 @@ void schoof(elliptic_curve E, fq_ctx_t ctx, fmpz_t q, fmpz_t c){
     //Cas ou Phi^2(P) \neq +-[q_bar]P
     else{
     	//Construction de X^q² + X^q + X = Phi3
+<<<<<<< HEAD
     	fq_poly_t Phi3;
+=======
+        fq_poly_t Phi3;
+>>>>>>> 76473c80101d3089cc4ceb2176ba6ee2c0a72dab
 		fq_poly_init(Phi3, ctx);
 		fq_set_ui(tmp, 1, ctx);
 		fq_poly_set_coeff(Phi3, fmpz_get_si(q)*fmpz_get_si(q), tmp, ctx);

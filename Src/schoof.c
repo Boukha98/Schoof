@@ -86,7 +86,7 @@ void schoof(elliptic_curve E, fq_ctx_t ctx, fmpz_t q, fmpz_t c){
 	
 	point P;
 	fq_poly_t *Psi; //poly de division
-    div_poly(Psi, E, lmax+2, ctx, P);//remplissage du tableau 
+    	div_poly(Psi, E, lmax+2, ctx, P);//remplissage du tableau 
     
    	//q_bar = q mod l
    	fmpz_t q_bar; fmpz_init(p_bar);
@@ -95,9 +95,6 @@ void schoof(elliptic_curve E, fq_ctx_t ctx, fmpz_t q, fmpz_t c){
    	if(fmpz_cmp(q_bar, tmp)>=0){
    		fmpz_sub(q_bar, q_bar, l);//q_bar = q_bar - l
    	}
-    
-   	//slong j;
-    //for(j=1; i<(l-1)>>2; j++){}
    
    	/* Phi^2(P) = +-[q_bar]P ssi:
    	
@@ -105,7 +102,7 @@ void schoof(elliptic_curve E, fq_ctx_t ctx, fmpz_t q, fmpz_t c){
    	 	(x^q^2 - x)*(Psi_k)^2(x)*(x^3 + ax + b) + Psi_(k-1)(x)*Psi_(k+1)(x) = 0
    	 Si k impair: 
    	 	(x^q^2 - x)*(Psi_k)^2(x) + Psi_(k-1)(x)*Psi_(k+1)(x)*(x^3 + ax + b) = 0     
-    */
+    	*/
   
    	//Cas q_bar impair
    	if(q_bar&1){
@@ -130,51 +127,48 @@ void schoof(elliptic_curve E, fq_ctx_t ctx, fmpz_t q, fmpz_t c){
      		--> q_bar RC ou non?		(Jacobi)
    		2) Sinon (pgcd=1): alors t \neq 0[l], on peut appliquer les formules
         	d'addition de deux points distincts[ (Phi_l)^2(x,y) + q(x,y) ]
-<<<<<<< HEAD
     */
 
     fq_poly_gcd(poly, poly, Psi[l], ctx);
     //Cas ou pgcd \neq 1
     if(!fq_poly_is_one(poly, ctx)){
-		if(fmpz_jacobi(q, l) == -1){//q n'est pas un résidu quadratique
+	if(fmpz_jacobi(q, l) == -1){//q n'est pas un résidu quadratique
             fmpz_set_si(tmp, 0); // tmp = 0
-          	fmpz_CRT(t, t, a, tmp, l, 1); // TRC: t=0 mais on fait le calcul
+          fmpz_CRT(t, t, a, tmp, l, 1); // TRC: t=0 mais on fait le calcul
         }
         //On cherche w tel que q = w²[l]
       	else{
-           	fmpz_sqrtmod(w, q, l);
+           fmpz_sqrtmod(w, q, l);
             //Cas w impair
-           	if(w&1){
-    		    fq_poly_sqr(poly, Psi[w], ctx);
-    		    fq_poly_mul(poly, poly, Phi1, ctx);
-    		    fq_poly_mul(poly1, Psi[w-1], Psi[w+1], ctx);
-    			fq_poly_mul(poly1, poly1, y2, ctx);
-    			fq_poly_add(poly, poly, poly1, ctx);
-    		}
-    		//Cas w pair
-    		else{
-    			fq_poly_sqr(poly, Psi[w], ctx);
-    			fq_poly_mul(poly, poly, Phi1, ctx);
-    			fq_poly_mul(poly, poly, y2, ctx);
-    			fq_poly_mul(poly1, Psi[w-1], Psi[w+1], ctx);
-    			fq_poly_add(poly, poly, poly1, ctx);
-    		}
-    		//Calcul du pgcd
+           if(w&1){
+    	    	fq_poly_sqr(poly, Psi[w], ctx);
+    	    	fq_poly_mul(poly, poly, Phi1, ctx);
+    	    	fq_poly_mul(poly1, Psi[w-1], Psi[w+1], ctx);
+    		fq_poly_mul(poly1, poly1, y2, ctx);
+    		fq_poly_add(poly, poly, poly1, ctx);
+    	    }
+    	    //Cas w pair
+    	    else{
+    		fq_poly_sqr(poly, Psi[w], ctx);
+    		fq_poly_mul(poly, poly, Phi1, ctx);
+    		fq_poly_mul(poly, poly, y2, ctx);
+    		fq_poly_mul(poly1, Psi[w-1], Psi[w+1], ctx);
+    		fq_poly_add(poly, poly, poly1, ctx);
+    	    }
+    	    //Calcul du pgcd
             fq_poly_gcd(poly, poly, Psi[l], ctx);
             //Cas pgcd=1: t=0
             if(fq_poly_is_one(poly, ctx)){
-           		fq_set_ui(t, 0, ctx);
+           	fq_set_ui(t, 0, ctx);
             }
             //Cas pgcd \neq 1
             else{
             	//Cas w impair
             	if(w&1){
-           			fmpz_add_ui(tmp, q, 3);
-    				fmpz_divexact_si(tmp, tmp, 2);
-=======
-    	*/
+           		fmpz_add_ui(tmp, q, 3);
+    			fmpz_divexact_si(tmp, tmp, 2);
     
-    	fq_poly_gcd(poly, poly, Psi[l], ctx);
+    			fq_poly_gcd(poly, poly, Psi[l], ctx);
     	//Cas ou pgcd \neq 1
     	if(!fq_poly_is_one(poly, ctx)){
 		    if(fmpz_jacobi(q, l) == -1){//q n'est pas un résidu quadratique

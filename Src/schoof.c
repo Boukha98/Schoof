@@ -235,8 +235,7 @@ void schoof(elliptic_curve E, fq_ctx_t ctx, fmpz_t q, fmpz_t c){
 		fq_poly_t beta2, alpha;
 		fq_poly_init(beta2, ctx);fq_poly_init(alpha, ctx);
 		
-		for(j = 1; j <= (l-1)>>2; j++){
-			//Calcul de beta^2
+		//Calcul de beta^2
 			fq_poly_mul(poly, Psi[q_bar-1], Psi[q_bar+1], ctx);
 			fq_poly_sqr(poly1, Psi[q_bar], ctx);
 			fq_poly_mul(poly1, poly1, Phi2, ctx);
@@ -271,6 +270,9 @@ void schoof(elliptic_curve E, fq_ctx_t ctx, fmpz_t q, fmpz_t c){
 			fq_poly_scalar_mul(alpha, alpha, 4, ctx);
 			
 			fq_poly_sub(alpha, poly, alpha, ctx);
+			
+		for(j = 1; j <= (l-1)>>2; j++){
+			
 			
 		}
 			

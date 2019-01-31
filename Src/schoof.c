@@ -57,7 +57,7 @@ void produit_l(fmpz_t a, fmpz_t lmax){
 
 void schoof(elliptic_curve E, fq_ctx_t ctx, fmpz_t q, fmpz_t c){
 	fmpz_t l, q_sqrt;
-	fq_t tmp, t;
+	fq_t tmp, tmp1, t;
 	fq_poly_t poly; fq_poly_init(poly, ctx);fq_poly_t poly1; 
 	fq_poly_init(poly1, ctx);
 	fq_init(l, ctx);fmpz_init(q_sqrt);

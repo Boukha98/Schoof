@@ -15,3 +15,4 @@ void fnext_prime(fmpz_t res, fmpz_t l){
 		fmpz_add_ui(res, res, 2); // res = res+2
 	}
 }
+

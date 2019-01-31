@@ -196,7 +196,7 @@ int main(){
 	Psi = malloc((k + 1) * sizeof(fq_poly_t));
 	div_poly(Psi, E, k, ctx, P);
 	for(i = 0; i < k+1; i++){
-		flint_printf("Psi[%lu] =",i);fq_poly_print_pretty(Psi[i], var, 						ctx) ;flint_printf("\n\n");
+		flint_printf("Psi[%lu] =",i);fq_poly_print_pretty(Psi[i], var, ctx) ;flint_printf("\n\n");
 	}
 	fmpz_clear(p);
 	fq_ctx_clear(ctx);

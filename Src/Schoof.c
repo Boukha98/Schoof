@@ -26,8 +26,151 @@ void fq_init_curve(elliptic_curve E, fq_ctx_t ctx){
 	fq_init(E.b, ctx);
 }
 
-void Psi(fmpz_t l,fq_poly_t Psi,fq_ctx_t ctx){
+void Psi(elliptic_curve E,fmpz_t k,fq_poly_t Psi1,fq_ctx_t ctx){
+	fq_t tmp, tmp1;
+	fq_poly_t poly;
+	fq_poly_init(poly, ctx);
+	fq_init(tmp, ctx);fq_init(tmp1, ctx);
+	fmpz_t i,m,tmp2;
+	fmpz_init(i);fmpz_init(m);
+	fmpz_init(tmp2);
+	//initialisation de P
+	//fq_init_point(P, ctx);
+
+	//Polynome y^2 = x^3 + a*x + b
+	fq_poly_t y2;
+	fq_poly_init(y2, ctx);
+	fq_set_ui(tmp, 1, ctx);
+	fq_poly_set_coeff(y2, 3, tmp, ctx);//x^3
 	
+	fq_set(tmp, E.a, ctx);
+	fq_poly_set_coeff(y2, 1, tmp, ctx);//a*x
+	
+	fq_set(tmp, E.b, ctx);
+	fq_poly_set_coeff(y2, 0, tmp, ctx);//b
+
+	/*on verifie si P \in E
+	fq_sqr(tmp, P.y, ctx);
+	fq_poly_evaluate_fq(tmp1, y2, P.x, ctx);
+	if(!fq_equal(tmp, tmp1, ctx)){
+		fprintf(stderr, "Ce n'est pas un point de la courbe %,%s\n", P.x, P.y); 		exit(EXIT_FAILURE);
+	}*/
+	
+	fq_poly_t* Psi;
+	while(fmpz_cmp(i,k)<=0){
+ 		fq_poly_init(Psi[fmpz_get_ui(i)], ctx);
+ 		fmpz_add_ui(i,i,1);
+	}
+	/*for(i=0; i<3; i++){
+	     	fq_set_ui(tmp, i, ctx);
+       		fq_poly_set_fq(Psi[i], tmp, ctx);
+ 	}
+	*/
+	fq_poly_zero(Psi[0], ctx); //Psi_0 = 0
+	fq_poly_one(Psi[1], ctx); //Psi_1 = 1
+	fq_set_ui(tmp, 2, ctx);
+	fq_poly_set_fq(Psi[2], tmp, ctx); //Psi_2 = 2 
+	
+	//Psi_3 = 3x^4+6ax^2+12bx-a^2
+	fq_set_ui(tmp1, 3, ctx);
+	fq_poly_set_coeff(Psi[3], 4, tmp1, ctx);//3*x^4
+
+	fq_mul_ui(tmp, E.a, 6, ctx);//6*a
+	fq_poly_set_coeff(Psi[3], 2, tmp, ctx);//6*a*x^2
+
+	fq_mul_ui(tmp, E.b, 12, ctx);//12*b
+	fq_poly_set_coeff(Psi[3], 1, tmp, ctx);//12*b*x
+
+	fq_sqr(tmp, E.a, ctx);
+	fq_neg(tmp, tmp, ctx);/*pour a^3)*/fq_mul(tmp1, tmp, E.a, ctx);
+	fq_poly_set_coeff(Psi[3], 0, tmp, ctx);
+
+	//Psi_4 = 4y(x^6+5ax^4+20bx^3-5a^2x^2-4abx-8b^2-a^3)
+	fq_mul_ui(tmp, tmp, 20, ctx);
+	fq_poly_set_coeff(Psi[4], 2, tmp, ctx);// on a deja calculé a^2
+
+	fq_set_ui(tmp, 4, ctx);
+	fq_poly_set_coeff(Psi[4], 6, tmp, ctx);
+
+	fq_mul_ui(tmp, E.a, 20, ctx);
+	fq_poly_set_coeff(Psi[4], 4, tmp, ctx);
+	
+	fq_mul_ui(tmp, E.b, 80, ctx);
+	fq_poly_set_coeff(Psi[4], 3, tmp, ctx);
+
+	fq_mul(tmp, E.a, E.b, ctx);
+	fq_mul_ui(tmp, tmp, 16, ctx);
+	fq_neg(tmp, tmp, ctx);
+	fq_poly_set_coeff(Psi[4], 1, tmp, ctx);
+
+	fq_sqr(tmp, E.b, ctx);
+	fq_mul_ui(tmp, tmp, 8, ctx);
+	fq_sub(tmp, tmp1, tmp, ctx);
+	fq_mul_ui(tmp, tmp, 4, ctx);
+	fq_poly_set_coeff(Psi[4], 0, tmp, ctx);
+
+	//Récurrence
+	fmpz_set_ui(i,5);
+	while(fmpz_cmp(i,k)<=0){
+		//Cas i pair: i=2*m
+		if(fmpz_is_even(i)){
+			fmpz_divexact_ui(m,i,2);
+			fmpz_add_ui(tmp2,m,1);
+			fq_poly_sqr(Psi[fmpz_get_ui(i)], Psi[fmpz_get_ui(tmp2)], ctx);
+			fmpz_sub_ui(tmp2,m,2);
+			fq_poly_mul(Psi[fmpz_get_ui(i)], Psi[fmpz_get_ui(i)], Psi[fmpz_get_ui(tmp2)], ctx);
+	
+			fmpz_sub_ui(tmp2,m,1);
+			fq_poly_sqr(poly, Psi[fmpz_get_ui(tmp2)], ctx);
+			fmpz_add_ui(tmp2,m,2);
+			fq_poly_mul(poly, poly, Psi[fmpz_get_ui(tmp2)], ctx);
+
+			fq_poly_sub(poly, poly, Psi[fmpz_get_ui(i)], ctx);
+			fq_set_ui(tmp, 2, ctx);
+			fq_inv(tmp, tmp, ctx);
+			fq_poly_scalar_mul_fq(Psi[fmpz_get_ui(i)], Psi[fmpz_get_ui(m)], tmp, ctx);
+			fq_poly_mul(Psi[fmpz_get_ui(i)], Psi[fmpz_get_ui(i)], poly, ctx);
+		}
+		//Cas i impair: i=2*m+1
+		else{
+			fmpz_sub_ui(m,i,1);
+			fmpz_divexact_ui(m,m,2);
+			fq_poly_sqr(y2, y2, ctx);
+			if(fmpz_is_odd(m)){
+				fq_poly_pow(Psi[fmpz_get_ui(i)], Psi[fmpz_get_ui(m)], 3, ctx);
+				fmpz_add_ui(tmp2,m,2);
+				fq_poly_mul(Psi[fmpz_get_ui(i)], Psi[fmpz_get_ui(i)], Psi[fmpz_get_ui(tmp2)], ctx);
+				
+				fmpz_add_ui(tmp2,m,1);
+				fq_poly_pow(poly, Psi[fmpz_get_ui(tmp2)], 3, ctx);
+				fmpz_sub_ui(tmp2,m,1);
+				fq_poly_mul(poly, poly, Psi[fmpz_get_ui(tmp2)], ctx);
+				fq_poly_mul(poly, poly, y2, ctx);
+				fq_poly_sub(Psi[fmpz_get_ui(i)], Psi[fmpz_get_ui(i)], poly, ctx);
+			}
+			else{
+				fq_poly_pow(Psi[fmpz_get_ui(i)], Psi[fmpz_get_ui(m)], 3, ctx);
+				fmpz_add_ui(tmp2,m,2);
+				fq_poly_mul(Psi[fmpz_get_ui(i)], Psi[fmpz_get_ui(i)], Psi[fmpz_get_ui(tmp2)], ctx);
+				fq_poly_mul(Psi[fmpz_get_ui(i)], Psi[fmpz_get_ui(i)], y2, ctx);
+
+				fmpz_add_ui(tmp2,m,1);
+				fq_poly_pow(poly, Psi[fmpz_get_ui(tmp2)], 3, ctx);
+				fmpz_sub_ui(tmp2,m,1);
+				fq_poly_mul(poly, poly, Psi[fmpz_get_ui(tmp2)], ctx);
+				fq_poly_sub(Psi[fmpz_get_ui(i)], Psi[fmpz_get_ui(i)], poly, ctx);
+			}
+		}
+		
+		fmpz_add_ui(i,i,1);
+	}
+	
+	fq_poly_set(Psi1,Psi[fmpz_get_ui(k)],ctx);
+	
+	fmpz_clear(i);fmpz_clear(m);fmpz_clear(tmp2);
+	fq_clear(tmp1, ctx); fq_clear(tmp, ctx);
+	fq_poly_clear(poly, ctx); fq_poly_clear(y2, ctx);
+	fq_ctx_clear(ctx);
 }
 
 void schoof(elliptic_curve E, fq_ctx_t ctx, fmpz_t q){
@@ -96,10 +239,10 @@ void schoof(elliptic_curve E, fq_ctx_t ctx, fmpz_t q){
 		
 		//Cas q_bar impair
 	    	if(fmpz_is_odd(q_bar)){
-			Psi(q_bar,Psi1,ctx);fq_poly_sqr(poly, Psi1, ctx);
+			Psi(E,q_bar,Psi1,ctx);fq_poly_sqr(poly, Psi1, ctx);
 		    	fq_poly_mul(poly, poly, Phi2, ctx);fmpz_sub_ui(tmp,q_bar,1);
-			Psi(tmp,Psi1,ctx);fmpz_add_ui(tmp,q_bar,1);
-			Psi(tmp,Psi2,ctx);
+			Psi(E,tmp,Psi1,ctx);fmpz_add_ui(tmp,q_bar,1);
+			Psi(E,tmp,Psi2,ctx);
 		    	fq_poly_mul(poly1, Psi1, Psi2, ctx);
 		    	fq_poly_mul(poly1, poly1, y2, ctx);
 		    	fq_poly_add(poly, poly, poly1, ctx);
@@ -107,17 +250,17 @@ void schoof(elliptic_curve E, fq_ctx_t ctx, fmpz_t q){
 
 	    	//Cas q_bar pair
 	    	else{
-		    	Psi(q_bar,Psi1,ctx);fq_poly_sqr(poly, Psi1, ctx);
+		    	Psi(E,q_bar,Psi1,ctx);fq_poly_sqr(poly, Psi1, ctx);
 		    	fq_poly_mul(poly, poly, Phi2, ctx);
 		    	fq_poly_mul(poly, poly, y2, ctx);
 			fmpz_sub_ui(tmp,q_bar,1);
-			Psi(tmp,Psi1,ctx);fmpz_add_ui(tmp,q_bar,1);
-			Psi(tmp,Psi2,ctx);
+			Psi(E,tmp,Psi1,ctx);fmpz_add_ui(tmp,q_bar,1);
+			Psi(E,tmp,Psi2,ctx);
 		    	fq_poly_mul(poly1, Psi1, Psi2, ctx);
 		    	fq_poly_add(poly, poly, poly1, ctx);
 		}
 		
-		Psi(l,Psi1,ctx);
+		Psi(E,l,Psi1,ctx);
 		fq_poly_gcd(poly, poly, Psi1, ctx);
 		
 		//Il existe un point de l-torsion P tq Phi^2(P)=+-[q_bar]P
@@ -135,12 +278,12 @@ void schoof(elliptic_curve E, fq_ctx_t ctx, fmpz_t q){
 
 				//Cas w impair
 				if(fmpz_is_odd(w)){
-					Psi(w,Psi1,ctx);
+					Psi(E,w,Psi1,ctx);
 			    		fq_poly_sqr(poly, Psi1, ctx);
 			    		fq_poly_mul(poly, poly, Phi1, ctx);
 					fmpz_sub_ui(tmp,w,1);
-					Psi(tmp,Psi1,ctx);fmpz_add_ui(tmp,w,1);
-					Psi(tmp,Psi2,ctx);
+					Psi(E,tmp,Psi1,ctx);fmpz_add_ui(tmp,w,1);
+					Psi(E,tmp,Psi2,ctx);
 			    		fq_poly_mul(poly1, Psi1, Psi2, ctx);
 			    		fq_poly_mul(poly1, poly1, y2, ctx);
 			    		fq_poly_add(poly, poly, poly1, ctx);
@@ -148,18 +291,18 @@ void schoof(elliptic_curve E, fq_ctx_t ctx, fmpz_t q){
 
 			    	//Cas w pair
 			    	else{
-			    		Psi(w,Psi1,ctx);fq_poly_sqr(poly, Psi1, ctx);
+			    		Psi(E,w,Psi1,ctx);fq_poly_sqr(poly, Psi1, ctx);
 			    		fq_poly_mul(poly, poly, Phi1, ctx);
 			    		fq_poly_mul(poly, poly, y2, ctx);
 					fmpz_sub_ui(tmp,w,1);
-					Psi(tmp,Psi1,ctx);fmpz_add_ui(tmp,w,1);
-					Psi(tmp,Psi2,ctx);
+					Psi(E,tmp,Psi1,ctx);fmpz_add_ui(tmp,w,1);
+					Psi(E,tmp,Psi2,ctx);
 			    		fq_poly_mul(poly1, Psi1, Psi2, ctx);
 			    		fq_poly_add(poly, poly, poly1, ctx);
 			    	}
 
 			    	//Calcul du pgcd
-				Psi(l,Psi1,ctx);
+				Psi(E,l,Psi1,ctx);
 				fq_poly_gcd(poly, poly, Psi1, ctx);
 				
 				//Cas pgcd=1 cad w et -w ne sont pas solution: t=0
@@ -181,24 +324,24 @@ void schoof(elliptic_curve E, fq_ctx_t ctx, fmpz_t q){
 			    		}
 			    		e=fmpz_get_ui(tmp);
 			    		fq_poly_pow(poly, y2, e, ctx);
-					Psi(w,Psi1,ctx);
+					Psi(E,w,Psi1,ctx);
 			    		fq_poly_pow(poly1, Psi1, 3, ctx);
 			    		fq_poly_mul(poly, poly, poly1, ctx);
 					fq_set_ui(tmp1,4,ctx);
 			    		fq_poly_scalar_mul_fq(poly, poly, tmp1, ctx);
-					fmpz_add_ui(tmp,w,2);Psi(tmp,Psi1,ctx);
+					fmpz_add_ui(tmp,w,2);Psi(E,tmp,Psi1,ctx);
 			    		fq_poly_pow(poly1, Psi1, 2, ctx);
-					fmpz_sub_ui(tmp,w,1);Psi(tmp,Psi1,ctx);
+					fmpz_sub_ui(tmp,w,1);Psi(E,tmp,Psi1,ctx);
 			    		fq_poly_mul(poly1, poly1, Psi1, ctx);	
 			    		fq_poly_sub(poly, poly, poly1, ctx);
-					fmpz_sub_ui(tmp,w,2);Psi(tmp,Psi1,ctx);
+					fmpz_sub_ui(tmp,w,2);Psi(E,tmp,Psi1,ctx);
 			    		fq_poly_pow(poly1, Psi1, 2, ctx);
-					fmpz_add_ui(tmp,w,1);Psi(tmp,Psi1,ctx);
+					fmpz_add_ui(tmp,w,1);Psi(E,tmp,Psi1,ctx);
 			    		fq_poly_mul(poly1, poly1, Psi1, ctx);
 			    		fq_poly_add(poly, poly, poly1, ctx);
 			    				
 			    		//Calcul du pgcd
-					Psi(l,Psi1,ctx);
+					Psi(E,l,Psi1,ctx);
 				    	fq_poly_gcd(poly, poly, Psi1, ctx);
 				    		
 			    		fmpz_mul_ui(tmp, w, 2);//tmp=2*w
@@ -209,29 +352,32 @@ void schoof(elliptic_curve E, fq_ctx_t ctx, fmpz_t q){
 				    	}
 
 			      		fmpz_CRT(t, t, a, tmp, l, 1);//TRC
-				    	}
-				    }
-			    }
+				
+				}
+			}
+
 		}
+
 		//Il n'existe pas point de l-torsion tq Phi^2(P)=+-[q_bar]P
-		else{
+		else
+		{
 			fq_poly_t beta2, alpha;
 			fq_poly_init(beta2, ctx);fq_poly_init(alpha, ctx);
 
 			//Calcul de alpha
-			fmpz_sub_ui(tmp,q_bar,1);Psi(tmp,Psi1,ctx);
+			fmpz_sub_ui(tmp,q_bar,1);Psi(E,tmp,Psi1,ctx);
 			fq_poly_sqr(poly, Psi1, ctx);
-			fmpz_add_ui(tmp,q_bar,2);Psi(tmp,Psi1,ctx);
+			fmpz_add_ui(tmp,q_bar,2);Psi(E,tmp,Psi1,ctx);
 			fq_poly_mul(poly, poly, Psi1, ctx);
 
-			fmpz_add_ui(tmp,q_bar,1);Psi(tmp,Psi1,ctx);
+			fmpz_add_ui(tmp,q_bar,1);Psi(E,tmp,Psi1,ctx);
 			fq_poly_sqr(poly1, Psi1, ctx);
-			fmpz_sub_ui(tmp,q_bar,1);Psi(tmp,Psi1,ctx);
+			fmpz_sub_ui(tmp,q_bar,1);Psi(E,tmp,Psi1,ctx);
 			fq_poly_mul(poly1, poly, Psi1, ctx);
 
 			fq_poly_sub(poly, poly, poly1, ctx);
 
-			Psi(q_bar,Psi1,ctx);
+			Psi(E,q_bar,Psi1,ctx);
 			fq_poly_pow(poly1, Psi1, 3, ctx);
 
 			fmpz_pow_ui(tmp, q, 2);
@@ -254,16 +400,16 @@ void schoof(elliptic_curve E, fq_ctx_t ctx, fmpz_t q){
 			fq_poly_set_coeff(Phi3, 1, tmp1, ctx);
 
 			//Calcul de beta^2
-			fmpz_sub_ui(tmp,q_bar,1);Psi(tmp,Psi1,ctx);
-			fmpz_add_ui(tmp,q_bar,1);Psi(tmp,Psi2,ctx);
+			fmpz_sub_ui(tmp,q_bar,1);Psi(E,tmp,Psi1,ctx);
+			fmpz_add_ui(tmp,q_bar,1);Psi(E,tmp,Psi2,ctx);
 			fq_poly_mul(poly, Psi1, Psi2, ctx);
-			Psi(q_bar,Psi1,ctx);
+			Psi(E,q_bar,Psi1,ctx);
 			fq_poly_sqr(poly1, Psi1, ctx);
 			fq_poly_mul(poly1, poly1, Phi2, ctx);
 			fq_poly_add(poly, poly, poly1, ctx);
 			fq_poly_sqr(poly, poly, ctx);
 
-			Psi(q_bar,Psi1,ctx);
+			Psi(E,q_bar,Psi1,ctx);
 			fq_poly_sqr(poly1, Psi1, ctx);
 			fq_poly_mul(poly1, poly1, y2, ctx);
 			fq_poly_mul(poly, poly, poly1, ctx);
@@ -273,20 +419,20 @@ void schoof(elliptic_curve E, fq_ctx_t ctx, fmpz_t q){
 			//Calcul de gamma1 et teta1
 			fq_poly_t gamma1,teta1;
 			fq_poly_init(gamma1,ctx);fq_poly_init(teta1,ctx);
-			fmpz_sub_ui(tmp,q_bar,1);Psi(tmp,Psi1,ctx);
-			fmpz_add_ui(tmp,q_bar,1);Psi(tmp,Psi2,ctx);
+			fmpz_sub_ui(tmp,q_bar,1);Psi(E,tmp,Psi1,ctx);
+			fmpz_add_ui(tmp,q_bar,1);Psi(E,tmp,Psi2,ctx);
 			fq_poly_mul(poly,Psi1,Psi2,ctx);
-			Psi(q_bar,Psi1,ctx);
+			Psi(E,q_bar,Psi1,ctx);
 			fq_poly_mul(poly1,Psi1,Phi3,ctx);
 			fq_poly_sub(poly,poly,poly1,ctx);
 			fq_poly_mul(poly,poly,beta2,ctx);
-			Psi(q_bar,Psi1,ctx);
+			Psi(E,q_bar,Psi1,ctx);
 			fq_poly_sqr(poly1,Psi1,ctx);
 			fq_poly_sqr(poly2,alpha,ctx);
 			fq_poly_mul(poly1,poly1,poly2,ctx);
 			fq_poly_add(gamma1,poly,poly1,ctx);//gamma1
 
-			Psi(q_bar,Psi1,ctx);
+			Psi(E,q_bar,Psi1,ctx);
 			fq_poly_sqr(poly,Psi1,ctx);
 			fq_poly_mul(teta1,poly,beta2,ctx);//teta1			
 			
@@ -295,21 +441,21 @@ void schoof(elliptic_curve E, fq_ctx_t ctx, fmpz_t q){
 			fq_poly_init(gamma2,ctx);fq_poly_init(teta2,ctx);	
 			fq_set_si(tmp1,2,ctx);fq_poly_set_coeff(poly,fmpz_get_si(q)*fmpz_get_si(q),tmp1,ctx);
 			fq_set_si(tmp1,1,ctx);fq_poly_set_coeff(poly,1,tmp1,ctx);
-			Psi(q_bar,Psi1,ctx);
+			Psi(E,q_bar,Psi1,ctx);
 			fq_poly_sqr(poly1,Psi1,ctx);fq_poly_mul(poly,poly,poly1,ctx);
-			fmpz_sub_ui(tmp,q_bar,1);Psi(tmp,Psi1,ctx);
-			fmpz_add_ui(tmp,q_bar,1);Psi(tmp,Psi2,ctx);
+			fmpz_sub_ui(tmp,q_bar,1);Psi(E,tmp,Psi1,ctx);
+			fmpz_add_ui(tmp,q_bar,1);Psi(E,tmp,Psi2,ctx);
 			fq_poly_mul(poly2,Psi1,Psi2,ctx);fq_poly_sub(poly,poly,poly2,ctx);
 			fq_poly_mul(poly,poly,alpha,ctx);
 
-			fq_poly_neg(poly1,Phi2,ctx);Psi(q_bar,Psi1,ctx);
+			fq_poly_neg(poly1,Phi2,ctx);Psi(E,q_bar,Psi1,ctx);
 			fq_poly_sqr(poly2,Psi1,ctx);
 			fq_poly_mul(poly1,poly1,poly2,ctx);
-			fmpz_sub_ui(tmp,q_bar,1);Psi(tmp,Psi1,ctx);
-			fmpz_add_ui(tmp,q_bar,1);Psi(tmp,Psi2,ctx);
+			fmpz_sub_ui(tmp,q_bar,1);Psi(E,tmp,Psi1,ctx);
+			fmpz_add_ui(tmp,q_bar,1);Psi(E,tmp,Psi2,ctx);
 			fq_poly_mul(poly2,Psi1,Psi2,ctx);
 			fq_poly_sub(poly1,poly1,poly2,ctx);
-			Psi(q_bar,Psi1,ctx);
+			Psi(E,q_bar,Psi1,ctx);
 			fq_poly_pow(poly2,Psi1,3,ctx);
 			fq_poly_mul(poly1,poly1,poly2,ctx);fq_set_ui(tmp1,4,ctx);
 			fq_poly_scalar_mul_fq(teta2,poly1,tmp1,ctx);//teta2
@@ -330,14 +476,14 @@ void schoof(elliptic_curve E, fq_ctx_t ctx, fmpz_t q){
 				//Verification abcisse
 				fmpz_mul_ui(tmp,q,2);
 				e=fmpz_get_ui(tmp);
-				Psi(j,Psi1,ctx);
+				Psi(E,j,Psi1,ctx);
 				fq_poly_pow(poly,Psi1,e,ctx);
 				fq_poly_mul(poly,poly,gamma1,ctx);
 				
 				e=fmpz_get_ui(q);
-				fmpz_sub_ui(tmp,j,1);Psi(tmp,Psi1,ctx);				
+				fmpz_sub_ui(tmp,j,1);Psi(E,tmp,Psi1,ctx);				
 				fq_poly_pow(poly1,Psi1,e,ctx);
-				fmpz_add_ui(tmp,j,1);Psi(tmp,Psi1,ctx);
+				fmpz_add_ui(tmp,j,1);Psi(E,tmp,Psi1,ctx);
 				fq_poly_pow(poly2,Psi1,e,ctx);
 				fq_poly_mul(poly1,poly1,poly2,ctx);
 				fq_poly_mul(poly1,poly1,teta1,ctx);
@@ -346,16 +492,16 @@ void schoof(elliptic_curve E, fq_ctx_t ctx, fmpz_t q){
 				
 				//Verification ordonnée
 				e=fmpz_get_ui(q);e*=3;
-				Psi(j,Psi1,ctx);
+				Psi(E,j,Psi1,ctx);
 				fq_poly_pow(poly,Psi1,e,ctx);fq_poly_mul(poly,poly,gamma2,ctx);
 
-				fmpz_sub_ui(tmp,j,1);Psi(tmp,Psi1,ctx);
+				fmpz_sub_ui(tmp,j,1);Psi(E,tmp,Psi1,ctx);
 				fq_poly_sqr(poly1,Psi1,ctx);
-				fmpz_add_ui(tmp,j,2);Psi(tmp,Psi1,ctx);
+				fmpz_add_ui(tmp,j,2);Psi(E,tmp,Psi1,ctx);
 				fq_poly_mul(poly1,poly1,Psi1,ctx);
-				fmpz_add_ui(tmp,j,1);Psi(tmp,Psi1,ctx);
+				fmpz_add_ui(tmp,j,1);Psi(E,tmp,Psi1,ctx);
 				fq_poly_sqr(poly2,Psi1,ctx);
-				fmpz_sub_ui(tmp,j,2);Psi(tmp,Psi1,ctx);
+				fmpz_sub_ui(tmp,j,2);Psi(E,tmp,Psi1,ctx);
 				fq_poly_mul(poly2,poly2,Psi1,ctx);
 				fq_poly_sub(poly1,poly1,poly2,ctx);e=fmpz_get_ui(q);
 				fq_poly_pow(poly1,poly1,e,ctx);fq_poly_mul(poly1,poly1,teta2,ctx);
@@ -364,11 +510,15 @@ void schoof(elliptic_curve E, fq_ctx_t ctx, fmpz_t q){
 
 				fmpz_add_ui(j,j,1);
 			}
+		}
+
 		fmpz_mul(a,a,l);
+	
 	}
 
 }
 
 int main(){
-	
+	return 0;
 }
+

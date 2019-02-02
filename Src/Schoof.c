@@ -14,6 +14,16 @@ void fnext_prime(fmpz_t l){
 	}
 }
 
+typedef struct{
+	fq_t x, y; // Coordonnées du point
+}point;
+
+//initialisation
+void fq_init_point(point P, fq_ctx_t ctx){
+	fq_init(P.x, ctx);
+	fq_init(P.y, ctx);
+}
+
 //Courbe elliptique y^2 = x^3+a*x+b mod p
 typedef struct{
 	fmpz_t p;
@@ -56,7 +66,8 @@ void Psi(elliptic_curve E,fmpz_t k,fq_poly_t Psi1,fq_ctx_t ctx){
 		fprintf(stderr, "Ce n'est pas un point de la courbe %,%s\n", P.x, P.y); 		exit(EXIT_FAILURE);
 	}*/
 	
-	fq_poly_t* Psi;
+	fmpz_zero(i);
+	fq_poly_t Psi[fmpz_get_ui(k+1)];
 	while(fmpz_cmp(i,k)<=0){
  		fq_poly_init(Psi[fmpz_get_ui(i)], ctx);
  		fmpz_add_ui(i,i,1);
@@ -176,7 +187,7 @@ void Psi(elliptic_curve E,fmpz_t k,fq_poly_t Psi1,fq_ctx_t ctx){
 void schoof(elliptic_curve E, fq_ctx_t ctx, fmpz_t q){
 	ulong e;
 	fq_t tmp1;
-	fmpz_t l, a, q_sqrt,tmp,t;
+	fmpz_t l, a, q_sqrt,tmp,t,p;
 	fq_poly_t poly; fq_poly_init(poly, ctx);fq_poly_t poly1; 
 	fq_poly_init(poly1, ctx);fq_poly_t poly2; 
 	fq_poly_init(poly2, ctx);
@@ -184,7 +195,7 @@ void schoof(elliptic_curve E, fq_ctx_t ctx, fmpz_t q){
 	fq_poly_init(Psi1, ctx);fq_poly_init(Psi2, ctx);
 	fq_init(tmp1,ctx);
 	fmpz_init(l);fmpz_init(a);fmpz_init(q_sqrt);
-	fmpz_init(tmp);fmpz_init(t);
+	fmpz_init(tmp);fmpz_init(t);fmpz_init(p);
 	fq_init_curve(E, ctx);
 	fmpz_set_ui(l, 2);
 	
@@ -226,8 +237,9 @@ void schoof(elliptic_curve E, fq_ctx_t ctx, fmpz_t q){
 	}
 	else{fmpz_set_ui(t, 0);}
 	
+	fmpz_set_ui(l,3);
+	
 	while(fmpz_cmp(a,q_sqrt)<=0){
-		fnext_prime(l);
 		
     		//q_bar = q mod l
 		fmpz_t q_bar; fmpz_init(q_bar);
@@ -513,12 +525,26 @@ void schoof(elliptic_curve E, fq_ctx_t ctx, fmpz_t q){
 		}
 
 		fmpz_mul(a,a,l);
+		fnext_prime(l);
+		if(fmpz_cmp(l,fq_ctx_prime(ctx))==0){fnext_prime(l);}
 	
 	}
+	
+	fmpz_print(t);flint_printf("\n");
 
 }
 
 int main(){
+	fmpz_t p;fmpz_init(p);fmpz_set_ui(p,101);
+	signed long d = 1;char *var="x";fq_ctx_t ctx;
+	fq_ctx_init(ctx, p, d, var);
+	
+	elliptic_curve E;fq_init_curve(E,ctx);fq_set_ui(E.a,1,ctx);
+	fq_set_ui(E.b,0,ctx);
+	
+	schoof(E,ctx,p);
+
+	fq_ctx_clear(ctx);fmpz_clear(p);
 	return 0;
 }
 

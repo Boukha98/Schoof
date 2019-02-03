@@ -61,9 +61,9 @@ void Psi(fq_t a,fq_t b,fmpz_t l,fq_poly_t Psi1,fq_ctx_t ctx){
 	fq_set_ui(tmp,1,ctx);fq_poly_set_coeff(Psi[4], 6, tmp, ctx);//x^6
 	fq_mul_ui(tmp,a,5,ctx);fq_poly_set_coeff(Psi[4], 4, tmp, ctx);//5ax^4
 	fq_mul_ui(tmp, b, 20, ctx);fq_poly_set_coeff(Psi[4], 3, tmp, ctx);//20bx^3
-	fq_mul_ui(tmp, a, -4, ctx);fq_mul(tmp, tmp, b, ctx);
+	fq_neg(tmp,a,ctx);fq_mul_ui(tmp, tmp, 4, ctx);fq_mul(tmp, tmp, b, ctx);
 	fq_poly_set_coeff(Psi[4], 1, tmp, ctx);//-4abx
-	fq_sqr(tmp,b,ctx);fq_mul_ui(tmp,tmp,-8,ctx);fq_pow_ui(tmp1,a,3,ctx);
+	fq_sqr(tmp,b,ctx);fq_neg(tmp,tmp,ctx);fq_mul_ui(tmp,tmp,8,ctx);fq_pow_ui(tmp1,a,3,ctx);
 	fq_sub(tmp,tmp,tmp1,ctx);fq_poly_set_coeff(Psi[4], 0, tmp, ctx);//-8b^2-a^3
 	fq_set_ui(tmp,4,ctx);fq_poly_scalar_mul_fq(Psi[4],Psi[4],tmp,ctx);
 	
@@ -486,7 +486,7 @@ int main(){
 	fq_ctx_init(ctx, p, d, var);
 	
 	fq_t a,b;fq_init(a,ctx);fq_init(b,ctx);
-	fq_set_ui(a,100,ctx);fq_set_ui(b,0,ctx);
+	fq_set_ui(a,45,ctx);fq_set_ui(b,11,ctx);
 	
 	fmpz_t k;fmpz_init(k);fmpz_set_ui(k,5);
 	fq_poly_t Psi1;fq_poly_init(Psi1,ctx);

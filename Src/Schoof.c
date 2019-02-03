@@ -49,21 +49,21 @@ void Psi(fq_t a,fq_t b,fmpz_t l,fq_poly_t Psi1,fq_ctx_t ctx){
 	fq_poly_set_fq(Psi[2], tmp, ctx);
 	
 	//Psi_3 = 3x^4+6ax^2+12bx-a^2
-	fq_set_si(tmp, 3, ctx);fq_poly_set_coeff(Psi[3], 4, tmp, ctx);//3*x^4
+	fq_set_ui(tmp, 3, ctx);fq_poly_set_coeff(Psi[3], 4, tmp, ctx);//3*x^4
 	fq_mul_ui(tmp, a, 6, ctx);fq_poly_set_coeff(Psi[3], 2, tmp, ctx);//6*a*x^2
 	fq_mul_ui(tmp, b, 12, ctx);fq_poly_set_coeff(Psi[3], 1, tmp, ctx);//12*b*x
 	fq_sqr(tmp, a, ctx);fq_neg(tmp, tmp, ctx);
 	fq_poly_set_coeff(Psi[3], 0, tmp, ctx);//-a^2
 	
 	//Psi_4 = 4(x^6+5ax^4+20bx^3-5a^2x^2-4abx-8b^2-a^3)
-	fq_mul_si(tmp, tmp, 5, ctx);fq_neg(tmp, tmp, ctx);
+	fq_mul_ui(tmp, tmp,5, ctx);
 	fq_poly_set_coeff(Psi[4], 2, tmp, ctx);//-5a^2x^2
-	fq_set_si(tmp,1,ctx);fq_poly_set_coeff(Psi[4], 6, tmp, ctx);//x^6
-	fq_mul_si(tmp,a,5,ctx);fq_poly_set_coeff(Psi[4], 4, tmp, ctx);//5ax^4
-	fq_mul_si(tmp, b, 20, ctx);fq_poly_set_coeff(Psi[4], 3, tmp, ctx);//20bx^3
-	fq_mul_si(tmp, a, -4, ctx);fq_mul(tmp, tmp, b, ctx);
+	fq_set_ui(tmp,1,ctx);fq_poly_set_coeff(Psi[4], 6, tmp, ctx);//x^6
+	fq_mul_ui(tmp,a,5,ctx);fq_poly_set_coeff(Psi[4], 4, tmp, ctx);//5ax^4
+	fq_mul_ui(tmp, b, 20, ctx);fq_poly_set_coeff(Psi[4], 3, tmp, ctx);//20bx^3
+	fq_mul_ui(tmp, a, -4, ctx);fq_mul(tmp, tmp, b, ctx);
 	fq_poly_set_coeff(Psi[4], 1, tmp, ctx);//-4abx
-	fq_sqr(tmp,b,ctx);fq_mul_si(tmp,tmp,-8,ctx);fq_pow_ui(tmp1,a,3,ctx);
+	fq_sqr(tmp,b,ctx);fq_mul_ui(tmp,tmp,-8,ctx);fq_pow_ui(tmp1,a,3,ctx);
 	fq_sub(tmp,tmp,tmp1,ctx);fq_poly_set_coeff(Psi[4], 0, tmp, ctx);//-8b^2-a^3
 	fq_set_ui(tmp,4,ctx);fq_poly_scalar_mul_fq(Psi[4],Psi[4],tmp,ctx);
 	
@@ -88,7 +88,7 @@ void Psi(fq_t a,fq_t b,fmpz_t l,fq_poly_t Psi1,fq_ctx_t ctx){
 			fmpz_mul_ui(tmp4,i,2);
 			fq_poly_scalar_mul_fq(Psi[fmpz_get_ui(tmp4)],tmp2,tmp,ctx);
 					
-			if(fmpz_is_odd(n)){
+			if(fmpz_is_odd(i)){
 				fq_poly_pow(tmp2,Psi[fmpz_get_ui(i)],3,ctx);
 				fmpz_add_ui(tmp4,i,2);fq_poly_mul(tmp2,tmp2,Psi[fmpz_get_ui(tmp4)],ctx);
 				fmpz_add_ui(tmp4,i,1);fq_poly_pow(tmp3,Psi[fmpz_get_ui(tmp4)],3,ctx);
@@ -96,7 +96,6 @@ void Psi(fq_t a,fq_t b,fmpz_t l,fq_poly_t Psi1,fq_ctx_t ctx){
 				fq_poly_sqr(tmp5,y2,ctx);fq_poly_mul(tmp3,tmp3,tmp5,ctx);
 				fmpz_mul_ui(tmp4,i,2);fmpz_add_ui(tmp4,tmp4,1);
 				fq_poly_sub(Psi[fmpz_get_ui(tmp4)],tmp2,tmp3,ctx);
-				fmpz_add_ui(i,i,1);
 			}
 			else{
 				fq_poly_pow(tmp2,Psi[fmpz_get_ui(i)],3,ctx);
@@ -106,8 +105,9 @@ void Psi(fq_t a,fq_t b,fmpz_t l,fq_poly_t Psi1,fq_ctx_t ctx){
 				fmpz_sub_ui(tmp4,i,1);fq_poly_mul(tmp3,tmp3,Psi[fmpz_get_ui(tmp4)],ctx);
 				fmpz_mul_ui(tmp4,i,2);fmpz_add_ui(tmp4,tmp4,1);
 				fq_poly_sub(Psi[fmpz_get_ui(tmp4)],tmp2,tmp3,ctx);
-				fmpz_add_ui(i,i,1);
+				
 			}
+			fmpz_add_ui(i,i,1);
 		}
 	}
 	
@@ -168,14 +168,15 @@ void schoof(fq_t a,fq_t b,fq_ctx_t ctx,fmpz_t q){
 	//pgcd(Phi1, y2)
 	fq_poly_gcd(poly, Phi1, y2, ctx);
 	
-	fmpz_set_ui(l,2);fmpz_set_ui(c,2);
+	fmpz_set_ui(l,2);fmpz_set_ui(c,3);
 	fmpz_sqrt(q_sqrt,q);fmpz_mul_ui(q_sqrt,q_sqrt,4);
 	
+	/*
 	//Pour l=2
 	if(fq_poly_is_one(poly,ctx)){
 		fmpz_set_ui(t, 1);
 	}
-	else{fmpz_set_ui(t, 0);}
+	else{fmpz_set_ui(t, 0);}*/
 	
 	fmpz_set_ui(l,3);
 	
@@ -212,6 +213,8 @@ void schoof(fq_t a,fq_t b,fq_ctx_t ctx,fmpz_t q){
 		
 		Psi(a,b,l,Psi1,ctx);
 		fq_poly_gcd(poly, poly, Psi1, ctx);
+		/*char* var=x;
+		fq_poly_print_pretty(poly,'x',ctx);flint_printf("\n");*/
 		
 		//Il existe un point de l-torsion P tq Phi^2(P)=+-[q_bar]P
 		if(!fq_poly_is_one(poly,ctx)){
@@ -478,19 +481,18 @@ void schoof(fq_t a,fq_t b,fq_ctx_t ctx,fmpz_t q){
 }
 
 int main(){
-	fmpz_t p;fmpz_init(p);fmpz_set_ui(p,5);
+	fmpz_t p;fmpz_init(p);fmpz_set_ui(p,101);
 	signed long d = 1;char *var="x";fq_ctx_t ctx;
 	fq_ctx_init(ctx, p, d, var);
 	
 	fq_t a,b;fq_init(a,ctx);fq_init(b,ctx);
-	fq_set_ui(a,1,ctx);fq_set_ui(b,0,ctx);
+	fq_set_ui(a,100,ctx);fq_set_ui(b,0,ctx);
 	
-	/*
-	fmpz_t k;fmpz_init(k);fmpz_set_ui(k,10);
+	fmpz_t k;fmpz_init(k);fmpz_set_ui(k,5);
 	fq_poly_t Psi1;fq_poly_init(Psi1,ctx);
 	Psi(a,b,k,Psi1,ctx);
 	fq_poly_print_pretty(Psi1,var,ctx);
-	flint_printf("\n");*/
+	flint_printf("\n");
 	
 	schoof(a,b,ctx,p);
 	

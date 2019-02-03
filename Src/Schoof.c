@@ -21,7 +21,7 @@ void Psi(fq_t a,fq_t b,fmpz_t l,fq_poly_t Psi1,fq_ctx_t ctx){
 	if(fmpz_cmp(k,l)<=0){fmpz_add_ui(k,l,1);}
 	fq_poly_t Psi[fmpz_get_ui(k)];
 	fq_t tmp,tmp1;
-	fq_poly_t tmp2,tmp3;
+	fq_poly_t tmp2,tmp3,tmp5,y2;
 	
 	//Initialisation des variables
 	while(fmpz_cmp(i,k)<=0){
@@ -29,7 +29,14 @@ void Psi(fq_t a,fq_t b,fmpz_t l,fq_poly_t Psi1,fq_ctx_t ctx){
  		fmpz_add_ui(i,i,1);
 	}
 	fq_init(tmp,ctx);fq_init(tmp1,ctx);fq_poly_init(tmp2,ctx);
-	fq_poly_init(tmp3,ctx);
+	fq_poly_init(tmp3,ctx);fq_poly_init(tmp5,ctx);
+	fq_poly_init(y2,ctx);
+	
+	//Poly y2
+	fq_set_ui(tmp1, 1, ctx);
+	fq_poly_set_coeff(y2, 3, tmp1, ctx);//x^3
+	fq_poly_set_coeff(y2, 1, a, ctx);//a*x
+	fq_poly_set_coeff(y2, 0, b, ctx);//b
 	
 	//Psi_0 = 0
 	fq_poly_zero(Psi[0], ctx); 
@@ -47,7 +54,7 @@ void Psi(fq_t a,fq_t b,fmpz_t l,fq_poly_t Psi1,fq_ctx_t ctx){
 	fq_mul_ui(tmp, b, 12, ctx);fq_poly_set_coeff(Psi[3], 1, tmp, ctx);//12*b*x
 	fq_sqr(tmp, a, ctx);fq_neg(tmp, tmp, ctx);
 	fq_poly_set_coeff(Psi[3], 0, tmp, ctx);//-a^2
-
+	
 	//Psi_4 = 4(x^6+5ax^4+20bx^3-5a^2x^2-4abx-8b^2-a^3)
 	fq_mul_si(tmp, tmp, 5, ctx);fq_neg(tmp, tmp, ctx);
 	fq_poly_set_coeff(Psi[4], 2, tmp, ctx);//-5a^2x^2
@@ -62,6 +69,7 @@ void Psi(fq_t a,fq_t b,fmpz_t l,fq_poly_t Psi1,fq_ctx_t ctx){
 	
 	/* Psi5 = Psi4*(Psi2^3)-(Psi3^3)*Psi1 */
 	fq_poly_pow(tmp2,Psi[2],3,ctx);fq_poly_mul(tmp2,tmp2,Psi[4],ctx);
+	fq_poly_sqr(tmp5,y2,ctx);fq_poly_mul(tmp2,tmp2,tmp5,ctx);
 	fq_poly_pow(tmp3,Psi[3],3,ctx);fq_poly_sub(Psi[5],tmp2,tmp3,ctx);
 	
 	fmpz_fdiv_q_ui(n,l,2);
@@ -69,7 +77,7 @@ void Psi(fq_t a,fq_t b,fmpz_t l,fq_poly_t Psi1,fq_ctx_t ctx){
 	/* Psim, si n>=3 */
 	if(fmpz_cmp_ui(n,3)>=0){
 		fmpz_set_ui(i,3);
-		while(fmpz_cmp(i,k)<=0){
+		while(fmpz_cmp(i,n)<=0){
 			fmpz_sub_ui(tmp4,i,1);fq_poly_sqr(tmp2,Psi[fmpz_get_ui(tmp4)],ctx);
 			fmpz_add_ui(tmp4,i,2);fq_poly_mul(tmp2,tmp2,Psi[fmpz_get_ui(tmp4)],ctx);
 			fmpz_add_ui(tmp4,i,1);fq_poly_sqr(tmp3,Psi[fmpz_get_ui(tmp4)],ctx);
@@ -80,13 +88,26 @@ void Psi(fq_t a,fq_t b,fmpz_t l,fq_poly_t Psi1,fq_ctx_t ctx){
 			fmpz_mul_ui(tmp4,i,2);
 			fq_poly_scalar_mul_fq(Psi[fmpz_get_ui(tmp4)],tmp2,tmp,ctx);
 					
-			fq_poly_pow(tmp2,Psi[fmpz_get_ui(i)],3,ctx);
-			fmpz_add_ui(tmp4,i,2);fq_poly_mul(tmp2,tmp2,Psi[fmpz_get_ui(tmp4)],ctx);
-			fmpz_add_ui(tmp4,i,1);fq_poly_pow(tmp3,Psi[fmpz_get_ui(tmp4)],3,ctx);
-			fmpz_sub_ui(tmp4,i,1);fq_poly_mul(tmp3,tmp3,Psi[fmpz_get_ui(tmp4)],ctx);
-			fmpz_mul_ui(tmp4,i,2);fmpz_add_ui(tmp4,tmp4,1);
-			fq_poly_sub(Psi[fmpz_get_ui(tmp4)],tmp2,tmp3,ctx);
-			fmpz_add_ui(i,i,1);
+			if(fmpz_is_odd(n)){
+				fq_poly_pow(tmp2,Psi[fmpz_get_ui(i)],3,ctx);
+				fmpz_add_ui(tmp4,i,2);fq_poly_mul(tmp2,tmp2,Psi[fmpz_get_ui(tmp4)],ctx);
+				fmpz_add_ui(tmp4,i,1);fq_poly_pow(tmp3,Psi[fmpz_get_ui(tmp4)],3,ctx);
+				fmpz_sub_ui(tmp4,i,1);fq_poly_mul(tmp3,tmp3,Psi[fmpz_get_ui(tmp4)],ctx);
+				fq_poly_sqr(tmp5,y2,ctx);fq_poly_mul(tmp3,tmp3,tmp5,ctx);
+				fmpz_mul_ui(tmp4,i,2);fmpz_add_ui(tmp4,tmp4,1);
+				fq_poly_sub(Psi[fmpz_get_ui(tmp4)],tmp2,tmp3,ctx);
+				fmpz_add_ui(i,i,1);
+			}
+			else{
+				fq_poly_pow(tmp2,Psi[fmpz_get_ui(i)],3,ctx);
+				fmpz_add_ui(tmp4,i,2);fq_poly_mul(tmp2,tmp2,Psi[fmpz_get_ui(tmp4)],ctx);
+				fq_poly_sqr(tmp5,y2,ctx);fq_poly_mul(tmp2,tmp2,tmp5,ctx);
+				fmpz_add_ui(tmp4,i,1);fq_poly_pow(tmp3,Psi[fmpz_get_ui(tmp4)],3,ctx);
+				fmpz_sub_ui(tmp4,i,1);fq_poly_mul(tmp3,tmp3,Psi[fmpz_get_ui(tmp4)],ctx);
+				fmpz_mul_ui(tmp4,i,2);fmpz_add_ui(tmp4,tmp4,1);
+				fq_poly_sub(Psi[fmpz_get_ui(tmp4)],tmp2,tmp3,ctx);
+				fmpz_add_ui(i,i,1);
+			}
 		}
 	}
 	
@@ -99,7 +120,8 @@ void Psi(fq_t a,fq_t b,fmpz_t l,fq_poly_t Psi1,fq_ctx_t ctx){
 	}
 	fmpz_clear(n);fmpz_clear(i);fmpz_clear(k);fmpz_clear(tmp4);
 	fq_clear(tmp,ctx);fq_clear(tmp1,ctx);fq_poly_clear(tmp2,ctx);
-	fq_poly_clear(tmp3,ctx);
+	fq_poly_clear(tmp3,ctx);fq_poly_clear(tmp5,ctx);
+	fq_poly_clear(y2,ctx);
 }
 
 void schoof(fq_t a,fq_t b,fq_ctx_t ctx,fmpz_t q){
@@ -426,6 +448,7 @@ void schoof(fq_t a,fq_t b,fq_ctx_t ctx,fmpz_t q){
 
 				fmpz_add_ui(j,j,1);
 			}
+			
 		}
 
 		fmpz_mul(c,c,l);
@@ -455,7 +478,7 @@ void schoof(fq_t a,fq_t b,fq_ctx_t ctx,fmpz_t q){
 }
 
 int main(){
-	fmpz_t p;fmpz_init(p);fmpz_set_ui(p,7);
+	fmpz_t p;fmpz_init(p);fmpz_set_ui(p,5);
 	signed long d = 1;char *var="x";fq_ctx_t ctx;
 	fq_ctx_init(ctx, p, d, var);
 	
@@ -463,7 +486,7 @@ int main(){
 	fq_set_ui(a,1,ctx);fq_set_ui(b,0,ctx);
 	
 	/*
-	fmpz_t k;fmpz_init(k);fmpz_set_ui(k,4);
+	fmpz_t k;fmpz_init(k);fmpz_set_ui(k,10);
 	fq_poly_t Psi1;fq_poly_init(Psi1,ctx);
 	Psi(a,b,k,Psi1,ctx);
 	fq_poly_print_pretty(Psi1,var,ctx);

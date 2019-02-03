@@ -14,154 +14,92 @@ void fnext_prime(fmpz_t l){
 	}
 }
 
-void Psi(fq_t a,fq_t b,fmpz_t k,fq_poly_t Psi1,fq_ctx_t ctx){
-	fq_t tmp, tmp1;
-	fq_init(tmp, ctx);fq_init(tmp1, ctx);
-	fq_poly_t poly;fq_poly_init(poly, ctx);
-	fmpz_t i,m,tmp2;
-	fmpz_init(i);fmpz_init(m);
-	fmpz_init(tmp2);
-
-	//Polynome y^2 = x^3 + a*x + b
-	fq_poly_t y2;
-	fq_poly_init(y2, ctx);
-	fq_set_ui(tmp, 1, ctx);
-	fq_poly_set_coeff(y2, 3, tmp, ctx);//x^3
+void Psi(fq_t a,fq_t b,fmpz_t l,fq_poly_t Psi1,fq_ctx_t ctx){
+	fmpz_t n,i,k,tmp4;
+	fmpz_init(i);fmpz_zero(i);
+	fmpz_set_ui(k,5);
+	if(fmpz_cmp(k,l)<=0){fmpz_add_ui(k,l,1);}
+	fq_poly_t Psi[fmpz_get_ui(k)];
+	fq_t tmp,tmp1;
+	fq_poly_t tmp2,tmp3;
 	
-	fq_set(tmp, a, ctx);
-	fq_poly_set_coeff(y2, 1, tmp, ctx);//a*x
-	
-	fq_set(tmp, b, ctx);
-	fq_poly_set_coeff(y2, 0, tmp, ctx);//b
-
-	/*on verifie si P \in a,b
-	fq_sqr(tmp, P.y, ctx);
-	fq_poly_evaluate_fq(tmp1, y2, P.x, ctx);
-	if(!fq_equal(tmp, tmp1, ctx)){
-		fprintf(stderr, "Ce n'est pas un point de la courbe %,%s\n", P.x, P.y); 		exit(a,bXIT_FAILURa,b);
-	}*/
-	
-	fmpz_zero(i);
-	fq_poly_t Psi[fmpz_get_ui(k+1)];
+	//Initialisation des variables
 	while(fmpz_cmp(i,k)<=0){
  		fq_poly_init(Psi[fmpz_get_ui(i)], ctx);
  		fmpz_add_ui(i,i,1);
 	}
-	/*for(i=0; i<3; i++){
-	     	fq_set_ui(tmp, i, ctx);
-       		fq_poly_set_fq(Psi[i], tmp, ctx);
- 	}
-	*/
-	fq_poly_zero(Psi[0], ctx); //Psi_0 = 0
-	fq_poly_one(Psi[1], ctx); //Psi_1 = 1
+	fq_init(tmp,ctx);fq_init(tmp1,ctx);fq_poly_init(tmp2,ctx);
+	fq_poly_init(tmp3,ctx);
+	
+	//Psi_0 = 0
+	fq_poly_zero(Psi[0], ctx); 
+	
+	//Psi_1 = 1
+	fq_poly_one(Psi[1], ctx); 
+	
+	//Psi_2 = 2 
 	fq_set_ui(tmp, 2, ctx);
-	fq_poly_set_fq(Psi[2], tmp, ctx); //Psi_2 = 2 
+	fq_poly_set_fq(Psi[2], tmp, ctx);
 	
 	//Psi_3 = 3x^4+6ax^2+12bx-a^2
-	fq_set_ui(tmp1, 3, ctx);
-	fq_poly_set_coeff(Psi[3], 4, tmp1, ctx);//3*x^4
+	fq_set_si(tmp, 3, ctx);fq_poly_set_coeff(Psi[3], 4, tmp, ctx);//3*x^4
+	fq_mul_ui(tmp, a, 6, ctx);fq_poly_set_coeff(Psi[3], 2, tmp, ctx);//6*a*x^2
+	fq_mul_ui(tmp, b, 12, ctx);fq_poly_set_coeff(Psi[3], 1, tmp, ctx);//12*b*x
+	fq_sqr(tmp, a, ctx);fq_neg(tmp, tmp, ctx);
+	fq_poly_set_coeff(Psi[3], 0, tmp, ctx);//-a^2
 
-	fq_mul_ui(tmp, a, 6, ctx);//6*a
-	fq_poly_set_coeff(Psi[3], 2, tmp, ctx);//6*a*x^2
-
-	fq_mul_ui(tmp, b, 12, ctx);//12*b
-	fq_poly_set_coeff(Psi[3], 1, tmp, ctx);//12*b*x
-
-	fq_sqr(tmp, a, ctx);
-	fq_neg(tmp, tmp, ctx);/*pour a^3)*/fq_mul(tmp1, tmp, a, ctx);
-	fq_poly_set_coeff(Psi[3], 0, tmp, ctx);
-
-	//Psi_4 = 4y(x^6+5ax^4+20bx^3-5a^2x^2-4abx-8b^2-a^3)
-	fq_mul_ui(tmp, tmp, 20, ctx);
-	fq_poly_set_coeff(Psi[4], 2, tmp, ctx);// on a deja calculé a^2
-
-	fq_set_ui(tmp, 4, ctx);
-	fq_poly_set_coeff(Psi[4], 6, tmp, ctx);
-
-	fq_mul_ui(tmp, a, 20, ctx);
-	fq_poly_set_coeff(Psi[4], 4, tmp, ctx);
+	//Psi_4 = 4(x^6+5ax^4+20bx^3-5a^2x^2-4abx-8b^2-a^3)
+	fq_mul_si(tmp, tmp, 5, ctx);fq_neg(tmp, tmp, ctx);
+	fq_poly_set_coeff(Psi[4], 2, tmp, ctx);//-5a^2x^2
+	fq_set_si(tmp,1,ctx);fq_poly_set_coeff(Psi[4], 6, tmp, ctx);//x^6
+	fq_mul_si(tmp,a,5,ctx);fq_poly_set_coeff(Psi[4], 4, tmp, ctx);//5ax^4
+	fq_mul_si(tmp, b, 20, ctx);fq_poly_set_coeff(Psi[4], 3, tmp, ctx);//20bx^3
+	fq_mul_si(tmp, a, -4, ctx);fq_mul(tmp, tmp, b, ctx);
+	fq_poly_set_coeff(Psi[4], 1, tmp, ctx);//-4abx
+	fq_sqr(tmp,b,ctx);fq_mul_si(tmp,tmp,-8,ctx);fq_pow_ui(tmp1,a,3,ctx);
+	fq_sub(tmp,tmp,tmp1,ctx);fq_poly_set_coeff(Psi[4], 0, tmp, ctx);//-8b^2-a^3
+	fq_set_ui(tmp,4,ctx);fq_poly_scalar_mul_fq(Psi[4],Psi[4],tmp,ctx);
 	
-	fq_mul_ui(tmp, b, 80, ctx);
-	fq_poly_set_coeff(Psi[4], 3, tmp, ctx);
-
-	fq_mul(tmp, a, b, ctx);
-	fq_mul_ui(tmp, tmp, 16, ctx);
-	fq_neg(tmp, tmp, ctx);
-	fq_poly_set_coeff(Psi[4], 1, tmp, ctx);
-
-	fq_sqr(tmp, b, ctx);
-	fq_mul_ui(tmp, tmp, 8, ctx);
-	fq_sub(tmp, tmp1, tmp, ctx);
-	fq_mul_ui(tmp, tmp, 4, ctx);
-	fq_poly_set_coeff(Psi[4], 0, tmp, ctx);
-
-	//Récurrence
-	fmpz_set_ui(i,5);
-	while(fmpz_cmp(i,k)<=0){
-		//Cas i pair: i=2*m
-		if(fmpz_is_even(i)){
-			fmpz_divexact_ui(m,i,2);
-			fmpz_add_ui(tmp2,m,1);
-			fq_poly_sqr(Psi[fmpz_get_ui(i)], Psi[fmpz_get_ui(tmp2)], ctx);
-			fmpz_sub_ui(tmp2,m,2);
-			fq_poly_mul(Psi[fmpz_get_ui(i)], Psi[fmpz_get_ui(i)], Psi[fmpz_get_ui(tmp2)], ctx);
+	/* Psi5 = Psi4*(Psi2^3)-(Psi3^3)*Psi1 */
+	fq_poly_pow(tmp2,Psi[2],3,ctx);fq_poly_mul(tmp2,tmp2,Psi[4],ctx);
+	fq_poly_pow(tmp3,Psi[3],3,ctx);fq_poly_sub(Psi[5],tmp2,tmp3,ctx);
 	
-			fmpz_sub_ui(tmp2,m,1);
-			fq_poly_sqr(poly, Psi[fmpz_get_ui(tmp2)], ctx);
-			fmpz_add_ui(tmp2,m,2);
-			fq_poly_mul(poly, poly, Psi[fmpz_get_ui(tmp2)], ctx);
-
-			fq_poly_sub(poly, poly, Psi[fmpz_get_ui(i)], ctx);
-			fq_set_ui(tmp, 2, ctx);
-			fq_inv(tmp, tmp, ctx);
-			fq_poly_scalar_mul_fq(Psi[fmpz_get_ui(i)], Psi[fmpz_get_ui(m)], tmp, ctx);
-			fq_poly_mul(Psi[fmpz_get_ui(i)], Psi[fmpz_get_ui(i)], poly, ctx);
+	fmpz_fdiv_q_ui(n,l,2);
+	
+	/* Psim, si n>=3 */
+	if(fmpz_cmp_ui(n,3)>=0){
+		fmpz_set_ui(i,3);
+		while(fmpz_cmp(i,k)<=0){
+			fmpz_sub_ui(tmp4,i,1);fq_poly_sqr(tmp2,Psi[fmpz_get_ui(tmp4)],ctx);
+			fmpz_add_ui(tmp4,i,2);fq_poly_mul(tmp2,tmp2,Psi[fmpz_get_ui(tmp4)],ctx);
+			fmpz_add_ui(tmp4,i,1);fq_poly_sqr(tmp3,Psi[fmpz_get_ui(tmp4)],ctx);
+			fmpz_sub_ui(tmp4,i,2);fq_poly_mul(tmp3,tmp3,Psi[fmpz_get_ui(tmp4)],ctx);
+			fq_poly_sub(tmp2,tmp2,tmp3,ctx);
+			fq_poly_mul(tmp2,tmp2,Psi[fmpz_get_ui(i)],ctx);
+			fq_set_ui(tmp,2,ctx);fq_inv(tmp,tmp,ctx);
+			fmpz_mul_ui(tmp4,i,2);
+			fq_poly_scalar_mul_fq(Psi[fmpz_get_ui(tmp4)],tmp2,tmp,ctx);
+					
+			fq_poly_pow(tmp2,Psi[fmpz_get_ui(i)],3,ctx);
+			fmpz_add_ui(tmp4,i,2);fq_poly_mul(tmp2,tmp2,Psi[fmpz_get_ui(tmp4)],ctx);
+			fmpz_add_ui(tmp4,i,1);fq_poly_pow(tmp3,Psi[fmpz_get_ui(tmp4)],3,ctx);
+			fmpz_sub_ui(tmp4,i,1);fq_poly_mul(tmp3,tmp3,Psi[fmpz_get_ui(tmp4)],ctx);
+			fmpz_mul_ui(tmp4,i,2);fmpz_add_ui(tmp4,tmp4,1);
+			fq_poly_sub(Psi[fmpz_get_ui(tmp4)],tmp2,tmp3,ctx);
+			fmpz_add_ui(i,i,1);
 		}
-		//Cas i impair: i=2*m+1
-		else{
-			fmpz_sub_ui(m,i,1);
-			fmpz_divexact_ui(m,m,2);
-			fq_poly_sqr(y2, y2, ctx);
-			if(fmpz_is_odd(m)){
-				fq_poly_pow(Psi[fmpz_get_ui(i)], Psi[fmpz_get_ui(m)], 3, ctx);
-				fmpz_add_ui(tmp2,m,2);
-				fq_poly_mul(Psi[fmpz_get_ui(i)], Psi[fmpz_get_ui(i)], Psi[fmpz_get_ui(tmp2)], ctx);
-				
-				fmpz_add_ui(tmp2,m,1);
-				fq_poly_pow(poly, Psi[fmpz_get_ui(tmp2)], 3, ctx);
-				fmpz_sub_ui(tmp2,m,1);
-				fq_poly_mul(poly, poly, Psi[fmpz_get_ui(tmp2)], ctx);
-				fq_poly_mul(poly, poly, y2, ctx);
-				fq_poly_sub(Psi[fmpz_get_ui(i)], Psi[fmpz_get_ui(i)], poly, ctx);
-			}
-			else{
-				fq_poly_pow(Psi[fmpz_get_ui(i)], Psi[fmpz_get_ui(m)], 3, ctx);
-				fmpz_add_ui(tmp2,m,2);
-				fq_poly_mul(Psi[fmpz_get_ui(i)], Psi[fmpz_get_ui(i)], Psi[fmpz_get_ui(tmp2)], ctx);
-				fq_poly_mul(Psi[fmpz_get_ui(i)], Psi[fmpz_get_ui(i)], y2, ctx);
-
-				fmpz_add_ui(tmp2,m,1);
-				fq_poly_pow(poly, Psi[fmpz_get_ui(tmp2)], 3, ctx);
-				fmpz_sub_ui(tmp2,m,1);
-				fq_poly_mul(poly, poly, Psi[fmpz_get_ui(tmp2)], ctx);
-				fq_poly_sub(Psi[fmpz_get_ui(i)], Psi[fmpz_get_ui(i)], poly, ctx);
-			}
-		}
-		
-		fmpz_add_ui(i,i,1);
 	}
 	
-	fq_poly_set(Psi1,Psi[fmpz_get_ui(k)],ctx);
+	fq_poly_set(Psi1,Psi[fmpz_get_ui(l)],ctx);
 	
 	fmpz_zero(i);
 	while(fmpz_cmp(i,k)<=0){
  		fq_poly_clear(Psi[fmpz_get_ui(i)], ctx);
  		fmpz_add_ui(i,i,1);
 	}
-	fmpz_clear(i);fmpz_clear(m);fmpz_clear(tmp2);
-	fq_clear(tmp1, ctx); fq_clear(tmp, ctx);
-	fq_poly_clear(poly, ctx); fq_poly_clear(y2, ctx);
-	fq_ctx_clear(ctx);
+	fmpz_clear(n);fmpz_clear(i);fmpz_clear(k);fmpz_clear(tmp4);
+	fq_clear(tmp,ctx);fq_clear(tmp1,ctx);fq_poly_clear(tmp2,ctx);
+	fq_poly_clear(tmp3,ctx);
 }
 
 void schoof(fq_t a,fq_t b,fq_ctx_t ctx,fmpz_t q){
@@ -182,10 +120,8 @@ void schoof(fq_t a,fq_t b,fq_ctx_t ctx,fmpz_t q){
 	fq_poly_init(gamma1,ctx);fq_poly_init(teta1,ctx);
 	fq_poly_init(gamma2,ctx);fq_poly_init(teta2,ctx);
 	fq_poly_init(absc,ctx);fq_poly_init(ordo,ctx);
-	printf("hello\n");
 	
 	fmpz_set_ui(l, 2);
-	printf("hello\n");
 	
 	fmpz_sqrt(q_sqrt, q);fmpz_mul_ui(q_sqrt, q_sqrt, 4);// borne 4*sqrt(p)
 	
@@ -194,7 +130,6 @@ void schoof(fq_t a,fq_t b,fq_ctx_t ctx,fmpz_t q){
 	fq_poly_set_coeff(Phi1, fmpz_get_si(q), tmp1, ctx);
 	fq_neg(tmp1, tmp1, ctx);
 	fq_poly_set_coeff(Phi1, 1, tmp1, ctx);
-	printf("hello\n");
 	
 	//Construction de Phi2 = x^q² - x
 	fq_set_ui(tmp1, 1, ctx);
@@ -221,15 +156,14 @@ void schoof(fq_t a,fq_t b,fq_ctx_t ctx,fmpz_t q){
 	else{fmpz_set_ui(t, 0);}
 	
 	fmpz_set_ui(l,3);
-	printf("hello\n");
 	
 	while(fmpz_cmp(c,q_sqrt)<=0){
 		//q_bar = q mod l
 		fmpz_mod(q_bar, q, l);
-		fmpz_divexact_ui(tmp, l, 2); //tmp = l/2
+		/*fmpz_divexact_ui(tmp, l, 2); //tmp = l/2
 		if(fmpz_cmp(q_bar, tmp)>0){
 			fmpz_sub(q_bar, q_bar, l);//q_bar = q_bar - l
-		}
+		}*/
 		
 		//Cas q_bar impair
 	    	if(fmpz_is_odd(q_bar)){
@@ -500,8 +434,10 @@ void schoof(fq_t a,fq_t b,fq_ctx_t ctx,fmpz_t q){
 	
 	}
 	
-	printf("hello\n");
-	fmpz_print(t);flint_printf("\n");
+	fmpz_print(t);flint_printf("\n");//La trace de Froebenius
+	
+	fmpz_add_ui(tmp,q,1);fmpz_sub(tmp,tmp,t);
+	fmpz_print(tmp);flint_printf("\n");//Le cardinal
 	
 	fq_clear(tmp1,ctx);fmpz_clear(l);fmpz_clear(c);
 	fmpz_clear(q_sqrt);fmpz_clear(tmp);fmpz_clear(t);
@@ -524,10 +460,15 @@ int main(){
 	fq_ctx_init(ctx, p, d, var);
 	
 	fq_t a,b;fq_init(a,ctx);fq_init(b,ctx);
-	fq_set_ui(a,1,ctx);
-	fq_set_ui(b,0,ctx);
+	fq_set_ui(a,1,ctx);fq_set_ui(b,0,ctx);
 	
-	printf("hello\n");
+	/*
+	fmpz_t k;fmpz_init(k);fmpz_set_ui(k,4);
+	fq_poly_t Psi1;fq_poly_init(Psi1,ctx);
+	Psi(a,b,k,Psi1,ctx);
+	fq_poly_print_pretty(Psi1,var,ctx);
+	flint_printf("\n");*/
+	
 	schoof(a,b,ctx,p);
 	
 	fq_clear(a,ctx);fq_clear(b,ctx);

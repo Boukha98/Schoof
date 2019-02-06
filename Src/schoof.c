@@ -47,7 +47,7 @@ void Psi(elliptic_curve E,fmpz_t l,fq_poly_t Psi1,fq_ctx_t ctx){
 	if(fmpz_cmp(k,l)<=0){fmpz_add_ui(k,l,1);}
 	fq_poly_t Psi[fmpz_get_ui(k)];
 	fq_t tmp,tmp1;
-	fq_poly_t tmp2,tmp3,tmp5,y2;
+	fq_poly_t tmp2,tmp3,tmp5,y2;h
 	
 	//Initialisation des variables
 	while(fmpz_cmp(i,k)<=0){

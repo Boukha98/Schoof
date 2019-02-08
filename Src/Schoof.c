@@ -127,9 +127,9 @@ void Psi(fq_t a,fq_t b,fmpz_t l,fq_poly_t Psi1,fq_ctx_t ctx){
 void schoof(fq_t a,fq_t b,fq_ctx_t ctx,fmpz_t q){
 	ulong e;
 	fq_t tmp1;fq_init(tmp1,ctx);
-	fmpz_t l, c, q_sqrt,tmp,t,p,j,q_bar,w;
+	fmpz_t l, c, q_sqrt,tmp,tmp2,t,p,j,q_bar,w;
 	fmpz_init(l);fmpz_init(c);fmpz_init(q_sqrt);
-	fmpz_init(tmp);fmpz_init(t);fmpz_init(p);
+	fmpz_init(tmp);fmpz_init(tmp2);fmpz_init(t);fmpz_init(p);
 	fmpz_init(j);fmpz_init(q_bar);fmpz_init(w);
 	fq_poly_t y2,Phi1,Phi2,Phi3,Phi4,poly,poly1,poly2,Psi1,Psi2,beta,alpha;
 	fq_poly_t teta1,gamma1,teta2,gamma2,absc,ordo;
@@ -181,6 +181,9 @@ void schoof(fq_t a,fq_t b,fq_ctx_t ctx,fmpz_t q){
 		fmpz_set_ui(t, 1);
 	}
 	else{fmpz_set_ui(t, 0);}
+	fmpz_print(t);printf("mod");fmpz_print(l);flint_printf("\n");
+	
+	fmpz_print(t);fmpz_print(l);flint_printf("\n");
 	
 	fmpz_sqrt(q_sqrt,q);fmpz_mul_ui(q_sqrt,q_sqrt,4);
 	fmpz_set_ui(l,3);fmpz_set_ui(c,2);
@@ -188,7 +191,8 @@ void schoof(fq_t a,fq_t b,fq_ctx_t ctx,fmpz_t q){
 	while(fmpz_cmp(c,q_sqrt)<=0){
 		//q_bar = q mod l
 		fmpz_mod(q_bar, q, l);
-		/*fmpz_divexact_ui(tmp, l, 2); //tmp = l/2
+		/*fmpz_sub_ui(tmp,l,1);
+		fmpz_divexact_ui(tmp, tmp, 2); //tmp = l/2
 		if(fmpz_cmp(q_bar, tmp)>0){
 			fmpz_sub(q_bar, q_bar, l);//q_bar = q_bar - l
 		}*/
@@ -213,7 +217,7 @@ void schoof(fq_t a,fq_t b,fq_ctx_t ctx,fmpz_t q){
 			Psi(a,b,tmp,Psi1,ctx);fmpz_add_ui(tmp,q_bar,1);
 			Psi(a,b,tmp,Psi2,ctx);
 		    	fq_poly_mul(poly1, Psi1, Psi2, ctx);
-		    	fq_poly_add(poly, poly, poly1, ctx);
+		   	fq_poly_add(poly, poly, poly1, ctx);
 		}
 		
 		Psi(a,b,l,Psi1,ctx);
@@ -227,7 +231,8 @@ void schoof(fq_t a,fq_t b,fq_ctx_t ctx,fmpz_t q){
 			//Cas 1: Phi^2(P)=-[q_bar]P
 			if(fmpz_jacobi(q, l) == -1){//q n'est pas un résidu quadratique
 				fmpz_zero(tmp); // tmp = 0
-				fmpz_CRT(t, t, c, tmp, l, 0); // TRC: t=0 mais on fait le calcul
+				fmpz_CRT(t, t, c, tmp, l, 1); // TRC: t=0 mais on fait le calcul
+				fmpz_print(tmp);printf("mod");fmpz_print(l);flint_printf("\n");
 			}
 
 			//Cas 2: Phi^2(P)=[q_bar]P
@@ -266,7 +271,8 @@ void schoof(fq_t a,fq_t b,fq_ctx_t ctx,fmpz_t q){
 				//Cas pgcd=1 cad w et -w ne sont pas solution: t=0[l]
 				if(fq_poly_is_one(poly, ctx)){
 					fmpz_zero(tmp); // tmp = 0
-					fmpz_CRT(t, t, c, tmp, l, 0);
+					fmpz_CRT(t, t, c, tmp, l, 1);
+					fmpz_print(tmp);printf("mod");fmpz_print(l);flint_printf("\n");
 				}
 
 				//Cas pgcd différent de 1
@@ -310,7 +316,8 @@ void schoof(fq_t a,fq_t b,fq_ctx_t ctx,fmpz_t q){
 				    		fmpz_negmod(tmp, tmp, l);
 				    	}
 
-			      		fmpz_CRT(t, t, c, tmp, l, 0);//TRC
+			      		fmpz_CRT(t, t, c, tmp, l, 1);//TRC
+			      		fmpz_print(tmp);printf("mod");fmpz_print(l);flint_printf("\n");
 				
 				}
 			}
@@ -319,237 +326,431 @@ void schoof(fq_t a,fq_t b,fq_ctx_t ctx,fmpz_t q){
 
 		//Il n'existe pas point de l-torsion tq Phi^2(P)=+-[q_bar]P
 		else{
-			if(fmpz_is_even(q_bar)){
-				//Calcul de alpha
-				fmpz_sub_ui(tmp,q_bar,1);Psi(a,b,tmp,Psi1,ctx);
-				fq_poly_sqr(poly, Psi1, ctx);
-				fmpz_add_ui(tmp,q_bar,2);Psi(a,b,tmp,Psi1,ctx);
-				fq_poly_mul(poly, poly, Psi1, ctx);
-
-				fmpz_add_ui(tmp,q_bar,1);Psi(a,b,tmp,Psi1,ctx);
-				fq_poly_sqr(poly1, Psi1, ctx);
-				fmpz_sub_ui(tmp,q_bar,2);Psi(a,b,tmp,Psi1,ctx);
-				fq_poly_mul(poly1, poly1, Psi1, ctx);
-
-				fq_poly_sub(poly, poly, poly1, ctx);
-
-				Psi(a,b,q_bar,Psi1,ctx);
-				fq_poly_pow(poly1, Psi1, 3, ctx);
-
-				fmpz_pow_ui(tmp, q, 2);
-				fmpz_add_ui(tmp, tmp, 3);
-				fmpz_divexact_ui(tmp, tmp, 2);
-
-				fq_poly_pow(alpha, y2, fmpz_get_ui(tmp), ctx);
-				fq_poly_mul(alpha, alpha, poly1, ctx);
-				fq_set_ui(tmp1, 4, ctx);
-				fq_poly_scalar_mul_fq(alpha, alpha, tmp1, ctx);
-
-				fq_poly_sub(alpha, poly, alpha, ctx);
-
-				//Calcul de beta
-				fmpz_sub_ui(tmp,q_bar,1);Psi(a,b,tmp,Psi1,ctx);
-				fmpz_add_ui(tmp,q_bar,1);Psi(a,b,tmp,Psi2,ctx);
-				fq_poly_mul(poly, Psi1, Psi2, ctx);
-				
-				Psi(a,b,q_bar,Psi1,ctx);
-				fq_poly_sqr(poly1, Psi1, ctx);
-				fq_poly_mul(poly1,poly1,Phi2,ctx);
-				fq_poly_mul(poly1, poly1, y2, ctx);
-				
-				fq_poly_add(poly, poly1, poly, ctx);
-
-				Psi(a,b,q_bar,Psi1,ctx);
-				fq_poly_mul(poly, poly, Psi1, ctx);
-				fq_poly_mul(poly, poly, y2, ctx);
-				fq_set_ui(tmp1, 4, ctx);
-				fq_poly_scalar_mul_fq(poly, poly, tmp1, ctx);
-				fq_poly_neg(beta,poly,ctx);//beta
-				
-				//Calcul de gamma1 et teta1
-				fmpz_sub_ui(tmp,q_bar,1);Psi(a,b,tmp,Psi1,ctx);
-				fmpz_add_ui(tmp,q_bar,1);Psi(a,b,tmp,Psi2,ctx);
-				fq_poly_mul(poly,Psi1,Psi2,ctx);
-				Psi(a,b,q_bar,Psi1,ctx);fq_poly_sqr(poly1,Psi1,ctx);
-				fq_poly_mul(poly1,poly1,Phi3,ctx);
-				fq_poly_mul(poly1,poly1,y2,ctx);
-				fq_poly_sub(poly,poly1,poly,ctx);
-				fq_poly_sqr(poly1,beta,ctx);
-				fq_poly_mul(poly,poly,poly1,ctx);
-				Psi(a,b,q_bar,Psi1,ctx);fq_poly_sqr(poly1,Psi1,ctx);
-				fq_poly_mul(poly1,poly1,y2,ctx);
-				fq_poly_mul(poly1,poly1,y2,ctx);
-				fq_poly_sqr(poly2,alpha,ctx);
-				fq_poly_mul(poly1,poly1,poly2,ctx);
-				fq_poly_sub(gamma1,poly,poly1,ctx);//gamma1
-
-				Psi(a,b,q_bar,Psi1,ctx);
-				fq_poly_sqr(poly,Psi1,ctx);
-				fq_poly_sqr(poly1,beta,ctx);
-				fq_poly_mul(poly1,poly1,y2,ctx);
-				fq_poly_mul(teta1,poly,poly1,ctx);//teta1			
-				
-				//Calcul de gamma2 et teta2
-				fq_poly_pow(poly,beta,3,ctx);fq_poly_mul(poly,poly,y2,ctx);
-				Psi(a,b,q_bar,Psi1,ctx);fq_poly_sqr(poly1,Psi1,ctx);
-				fq_poly_mul(teta2,poly,poly1,ctx);//teta2
-				
-				fq_set_si(tmp1,2,ctx);fmpz_mul(tmp,q,q);e=fmpz_get_ui(tmp);
-				fq_poly_set_coeff(Phi4,e,tmp1,ctx);
-				fq_set_si(tmp1,1,ctx);fq_poly_set_coeff(Phi4,1,tmp1,ctx);
-				
-				Psi(a,b,q_bar,Psi1,ctx);
-				fq_poly_sqr(poly1,Psi1,ctx);fq_poly_mul(poly,Phi4,poly1,ctx);
-				fq_poly_mul(poly,poly,alpha,ctx);fq_poly_sqr(poly1,beta,ctx);
-				fq_poly_mul(poly1,poly1,y2,ctx);fq_poly_mul(poly,poly,poly1,ctx);
-				
-				fq_poly_pow(poly1,alpha,3,ctx);Psi(a,b,q_bar,Psi1,ctx);
-				fq_poly_sqr(poly2,Psi1,ctx);fq_poly_mul(poly1,poly1,poly2,ctx);
-				fq_poly_mul(poly1,poly1,y2,ctx);fq_poly_mul(poly1,poly1,y2,ctx);
-				
-				fq_poly_sub(poly,poly,poly1,ctx);
-									
-				fmpz_sub_ui(tmp,q_bar,1);Psi(a,b,tmp,Psi1,ctx);
-				fmpz_add_ui(tmp,q_bar,1);Psi(a,b,tmp,Psi2,ctx);
-				fq_poly_mul(poly1,Psi1,Psi2,ctx);fq_poly_mul(poly1,poly1,alpha,ctx);
-				fq_poly_sqr(poly2,beta,ctx);
-				fq_poly_mul(poly1,poly1,poly2,ctx);
-				
-				fq_poly_sub(poly,poly,poly1,ctx);
-				
-				fmpz_mul(tmp,q,q);fmpz_add_ui(tmp,tmp,1);
-				fmpz_divexact_ui(tmp,tmp,2);e=fmpz_get_ui(tmp);
-				fq_poly_pow(poly1,y2,e,ctx);Psi(a,b,q_bar,Psi1,ctx);
-				fq_poly_sqr(poly2,Psi1,ctx);fq_poly_mul(poly1,poly1,poly2,ctx);
-				fq_poly_pow(poly2,beta,3,ctx);fq_poly_mul(poly1,poly1,poly2,ctx);
-				
-				fq_poly_sub(poly,poly,poly1,ctx);
-				
-				fmpz_add_ui(tmp, q, 1);fmpz_divexact_ui(tmp, tmp, 2);
-				e=fmpz_get_ui(tmp);fq_poly_pow(poly1,y2,e,ctx);
-				fq_set_ui(tmp1,4,ctx);
-				fq_poly_scalar_mul_fq(poly1,poly1,tmp1,ctx);
-				
-				fq_poly_mul(gamma2,poly,poly1,ctx);//gamma2
-			}
-
-			else{
-				//Calcul de alpha
-				fmpz_sub_ui(tmp,q_bar,1);Psi(a,b,tmp,Psi1,ctx);
-				fq_poly_sqr(poly, Psi1, ctx);
-				fq_poly_mul(poly,poly,y2,ctx);
-				fmpz_add_ui(tmp,q_bar,2);Psi(a,b,tmp,Psi1,ctx);
-				fq_poly_mul(poly, poly, Psi1, ctx);
-
-				fmpz_add_ui(tmp,q_bar,1);Psi(a,b,tmp,Psi1,ctx);
-				fq_poly_sqr(poly1, Psi1, ctx);
-				fq_poly_mul(poly1,poly1,y2,ctx);
-				fmpz_sub_ui(tmp,q_bar,2);Psi(a,b,tmp,Psi1,ctx);
-				fq_poly_mul(poly1, poly1, Psi1, ctx);
-
-				fq_poly_sub(poly, poly, poly1, ctx);
-
-				Psi(a,b,q_bar,Psi1,ctx);
-				fq_poly_pow(poly1, Psi1, 3, ctx);
-
-				fmpz_pow_ui(tmp, q, 2);
-				fmpz_add_ui(tmp, tmp, 1);
-				fmpz_divexact_ui(tmp, tmp, 2);
-
-				fq_poly_pow(alpha, y2, fmpz_get_ui(tmp), ctx);
-				fq_poly_mul(alpha, alpha, poly1, ctx);
-				fq_set_ui(tmp1, 4, ctx);
-				fq_poly_scalar_mul_fq(alpha, alpha, tmp1, ctx);
-
-				fq_poly_sub(alpha, poly, alpha, ctx);
-
-				//Calcul de beta
-				fmpz_sub_ui(tmp,q_bar,1);Psi(a,b,tmp,Psi1,ctx);
-				fmpz_add_ui(tmp,q_bar,1);Psi(a,b,tmp,Psi2,ctx);
-				fq_poly_mul(poly, Psi1, Psi2, ctx);
-				fq_poly_mul(poly, poly, y2, ctx);
-				
-				Psi(a,b,q_bar,Psi1,ctx);
-				fq_poly_sqr(poly1, Psi1, ctx);
-				fq_poly_mul(poly1,poly1,Phi2,ctx);
-				
-				fq_poly_add(poly, poly1, poly, ctx);
-
-				Psi(a,b,q_bar,Psi1,ctx);
-				fq_poly_mul(poly, poly, Psi1, ctx);
-				fq_set_ui(tmp1, 4, ctx);
-				fq_poly_scalar_mul_fq(poly, poly, tmp1, ctx);
-				fq_poly_neg(beta,poly,ctx);//beta
-				
-				//Calcul de gamma1 et teta1
-				fmpz_sub_ui(tmp,q_bar,1);Psi(a,b,tmp,Psi1,ctx);
-				fmpz_add_ui(tmp,q_bar,1);Psi(a,b,tmp,Psi2,ctx);
-				fq_poly_mul(poly,Psi1,Psi2,ctx);
-				fq_poly_mul(poly,poly,y2,ctx);
-				Psi(a,b,q_bar,Psi1,ctx);fq_poly_sqr(poly1,Psi1,ctx);
-				fq_poly_mul(poly1,poly1,Phi3,ctx);
-				fq_poly_sub(poly,poly1,poly,ctx);
-				fq_poly_sqr(poly1,beta,ctx);
-				fq_poly_mul(poly1,poly1,y2,ctx);
-				fq_poly_mul(poly,poly,poly1,ctx);
-				Psi(a,b,q_bar,Psi1,ctx);fq_poly_sqr(poly1,Psi1,ctx);
-				fq_poly_sqr(poly2,alpha,ctx);
-				fq_poly_mul(poly1,poly1,poly2,ctx);
-				fq_poly_sub(gamma1,poly,poly1,ctx);//gamma1
-
-				Psi(a,b,q_bar,Psi1,ctx);
-				fq_poly_sqr(poly,Psi1,ctx);
-				fq_poly_sqr(poly1,beta,ctx);
-				fq_poly_mul(poly1,poly1,y2,ctx);
-				fq_poly_mul(teta1,poly,poly1,ctx);//teta1
-				
-				//Calcul de gamma2 et teta2
-				fq_poly_pow(poly,beta,3,ctx);fq_poly_mul(poly,poly,y2,ctx);
-				Psi(a,b,q_bar,Psi1,ctx);fq_poly_sqr(poly1,Psi1,ctx);
-				fq_poly_mul(teta2,poly,poly1,ctx);//teta2
-				
-				fq_set_si(tmp1,2,ctx);fmpz_mul(tmp,q,q);e=fmpz_get_ui(tmp);
-				fq_poly_set_coeff(Phi4,e,tmp1,ctx);
-				fq_set_si(tmp1,1,ctx);fq_poly_set_coeff(Phi4,1,tmp1,ctx);
-				
-				Psi(a,b,q_bar,Psi1,ctx);
-				fq_poly_sqr(poly1,Psi1,ctx);fq_poly_mul(poly,Phi4,poly1,ctx);
-				fq_poly_mul(poly,poly,alpha,ctx);fq_poly_sqr(poly1,beta,ctx);
-				fq_poly_mul(poly1,poly1,y2,ctx);fq_poly_mul(poly,poly,poly1,ctx);
-				
-				fq_poly_pow(poly1,alpha,3,ctx);Psi(a,b,q_bar,Psi1,ctx);
-				fq_poly_sqr(poly2,Psi1,ctx);fq_poly_mul(poly1,poly1,poly2,ctx);
-				
-				fq_poly_sub(poly,poly,poly1,ctx);
-									
-				fmpz_sub_ui(tmp,q_bar,1);Psi(a,b,tmp,Psi1,ctx);
-				fmpz_add_ui(tmp,q_bar,1);Psi(a,b,tmp,Psi2,ctx);
-				fq_poly_mul(poly1,Psi1,Psi2,ctx);fq_poly_mul(poly1,poly1,alpha,ctx);
-				fq_poly_sqr(poly2,beta,ctx);
-				fq_poly_mul(poly2,poly2,y2,ctx);fq_poly_mul(poly2,poly2,y2,ctx);
-				fq_poly_mul(poly1,poly1,poly2,ctx);
-				
-				fq_poly_sub(poly,poly,poly1,ctx);
-				
-				fmpz_mul(tmp,q,q);fmpz_add_ui(tmp,tmp,3);
-				fmpz_divexact_ui(tmp,tmp,2);e=fmpz_get_ui(tmp);
-				fq_poly_pow(poly1,y2,e,ctx);Psi(a,b,q_bar,Psi1,ctx);
-				fq_poly_sqr(poly2,Psi1,ctx);fq_poly_mul(poly1,poly1,poly2,ctx);
-				fq_poly_pow(poly2,beta,3,ctx);fq_poly_mul(poly1,poly1,poly2,ctx);
-				
-				fq_poly_sub(poly,poly,poly1,ctx);
-				
-				fmpz_sub_ui(tmp, q, 1);fmpz_divexact_ui(tmp, tmp, 2);
-				e=fmpz_get_ui(tmp);fq_poly_pow(poly1,y2,e,ctx);
-				fq_set_ui(tmp1,4,ctx);
-				fq_poly_scalar_mul_fq(poly1,poly1,tmp1,ctx);
-				
-				fq_poly_mul(gamma2,poly,poly1,ctx);//gamma2
-			}
-			
-			Psi(a,b,l,Psi2,ctx);
 			fmpz_one(j);
-			while(fmpz_cmp(j,l)<0){
+			fmpz_add_ui(tmp,l,1);fmpz_divexact_ui(tmp,tmp,2);
+			while(fmpz_cmp(j,tmp)<=0){
+				if(fmpz_is_even(q_bar)){
+					//Calcul de alpha
+					fmpz_sub_ui(tmp,q_bar,1);Psi(a,b,tmp,Psi1,ctx);
+					fq_poly_sqr(poly, Psi1, ctx);
+					fmpz_add_ui(tmp,q_bar,2);Psi(a,b,tmp,Psi1,ctx);
+					fq_poly_mul(poly, poly, Psi1, ctx);
+					fmpz_add_ui(tmp,q_bar,1);Psi(a,b,tmp,Psi1,ctx);
+					fq_poly_sqr(poly1, Psi1, ctx);
+					fmpz_sub_ui(tmp,q_bar,2);Psi(a,b,tmp,Psi1,ctx);
+					fq_poly_mul(poly1, poly1, Psi1, ctx);
+
+					fq_poly_sub(poly, poly, poly1, ctx);
+
+					Psi(a,b,q_bar,Psi1,ctx);
+					fq_poly_pow(poly1, Psi1, 3, ctx);
+ 
+ 					fmpz_pow_ui(tmp, q, 2);
+					fmpz_add_ui(tmp, tmp, 3);
+					fmpz_divexact_ui(tmp, tmp, 2);
+
+					fq_poly_pow(alpha, y2, fmpz_get_ui(tmp), ctx);
+					fq_poly_mul(alpha, alpha, poly1, ctx);
+					fq_set_ui(tmp1, 4, ctx);
+					fq_poly_scalar_mul_fq(alpha, alpha, tmp1, ctx);
+
+					fq_poly_sub(alpha, poly, alpha, ctx);
+
+					//Calcul de beta
+					fmpz_sub_ui(tmp,q_bar,1);Psi(a,b,tmp,Psi1,ctx);
+					fmpz_add_ui(tmp,q_bar,1);Psi(a,b,tmp,Psi2,ctx);
+					fq_poly_mul(poly, Psi1, Psi2, ctx);
+					
+					Psi(a,b,q_bar,Psi1,ctx);
+					fq_poly_sqr(poly1, Psi1, ctx);
+					fq_poly_mul(poly1,poly1,Phi2,ctx);
+					fq_poly_mul(poly1, poly1, y2, ctx);
+					
+					fq_poly_add(poly, poly1, poly, ctx);
+
+					Psi(a,b,q_bar,Psi1,ctx);
+					fq_poly_mul(poly, poly, Psi1, ctx);
+					fq_poly_mul(poly, poly, y2, ctx);
+					fq_set_ui(tmp1, 4, ctx);
+					fq_poly_scalar_mul_fq(poly, poly, tmp1, ctx);
+					fq_poly_neg(beta,poly,ctx);//beta
+						
+					//Calcul de gamma1 et teta1
+					fmpz_sub_ui(tmp,q_bar,1);Psi(a,b,tmp,Psi1,ctx);
+					fmpz_add_ui(tmp,q_bar,1);Psi(a,b,tmp,Psi2,ctx);
+					fq_poly_mul(poly,Psi1,Psi2,ctx);
+					Psi(a,b,q_bar,Psi1,ctx);fq_poly_sqr(poly1,Psi1,ctx);
+					fq_poly_mul(poly1,poly1,Phi3,ctx);
+					fq_poly_mul(poly1,poly1,y2,ctx);
+					fq_poly_sub(poly,poly1,poly,ctx);
+					fq_poly_sqr(poly1,beta,ctx);
+					fq_poly_mul(poly,poly,poly1,ctx);
+					Psi(a,b,q_bar,Psi1,ctx);fq_poly_sqr(poly1,Psi1,ctx);
+					fq_poly_mul(poly1,poly1,y2,ctx);
+					fq_poly_mul(poly1,poly1,y2,ctx);
+					fq_poly_sqr(poly2,alpha,ctx);
+					fq_poly_mul(poly1,poly1,poly2,ctx);
+					fq_poly_sub(gamma1,poly,poly1,ctx);//gamma1
+
+					Psi(a,b,q_bar,Psi1,ctx);
+					fq_poly_sqr(poly,Psi1,ctx);
+					fq_poly_sqr(poly1,beta,ctx);
+					fq_poly_mul(poly1,poly1,y2,ctx);
+					fq_poly_mul(teta1,poly,poly1,ctx);//teta1			
+						
+					//Calcul de gamma2 et teta2
+					fq_poly_pow(poly,beta,3,ctx);fq_poly_mul(poly,poly,y2,ctx);
+					Psi(a,b,q_bar,Psi1,ctx);fq_poly_sqr(poly1,Psi1,ctx);
+					fq_poly_mul(teta2,poly,poly1,ctx);//teta2
+					
+					fq_set_si(tmp1,2,ctx);fmpz_mul(tmp,q,q);e=fmpz_get_ui(tmp);
+					fq_poly_set_coeff(Phi4,e,tmp1,ctx);
+					fq_set_si(tmp1,1,ctx);fq_poly_set_coeff(Phi4,1,tmp1,ctx);
+						
+					Psi(a,b,q_bar,Psi1,ctx);
+					fq_poly_sqr(poly1,Psi1,ctx);fq_poly_mul(poly,Phi4,poly1,ctx);
+					fq_poly_mul(poly,poly,alpha,ctx);fq_poly_sqr(poly1,beta,ctx);
+					fq_poly_mul(poly1,poly1,y2,ctx);fq_poly_mul(poly,poly,poly1,ctx);
+						
+					fq_poly_pow(poly1,alpha,3,ctx);Psi(a,b,q_bar,Psi1,ctx);
+					fq_poly_sqr(poly2,Psi1,ctx);fq_poly_mul(poly1,poly1,poly2,ctx);
+					fq_poly_mul(poly1,poly1,y2,ctx);fq_poly_mul(poly1,poly1,y2,ctx);
+						
+					fq_poly_sub(poly,poly,poly1,ctx);
+											
+					fmpz_sub_ui(tmp,q_bar,1);Psi(a,b,tmp,Psi1,ctx);
+					fmpz_add_ui(tmp,q_bar,1);Psi(a,b,tmp,Psi2,ctx);
+					fq_poly_mul(poly1,Psi1,Psi2,ctx);fq_poly_mul(poly1,poly1,alpha,ctx);
+					fq_poly_sqr(poly2,beta,ctx);
+					fq_poly_mul(poly1,poly1,poly2,ctx);
+						
+					fq_poly_sub(poly,poly,poly1,ctx);
+						
+					fmpz_mul(tmp,q,q);fmpz_add_ui(tmp,tmp,1);
+					fmpz_divexact_ui(tmp,tmp,2);e=fmpz_get_ui(tmp);
+					fq_poly_pow(poly1,y2,e,ctx);Psi(a,b,q_bar,Psi1,ctx);
+					fq_poly_sqr(poly2,Psi1,ctx);fq_poly_mul(poly1,poly1,poly2,ctx);
+					fq_poly_pow(poly2,beta,3,ctx);fq_poly_mul(poly1,poly1,poly2,ctx);
+						
+					fq_poly_sub(poly,poly,poly1,ctx);
+					
+					fmpz_add_ui(tmp, q, 1);fmpz_divexact_ui(tmp, tmp, 2);
+					e=fmpz_get_ui(tmp);fq_poly_pow(poly1,y2,e,ctx);
+					fq_set_ui(tmp1,4,ctx);
+					fq_poly_scalar_mul_fq(poly1,poly1,tmp1,ctx);
+						
+					fq_poly_mul(gamma2,poly,poly1,ctx);//gamma2
+						
+					if(fmpz_is_even(j)){
+						//Verification abcisse
+						fmpz_mul_ui(tmp,q,2);e=fmpz_get_ui(tmp);
+						Psi(a,b,j,Psi1,ctx);fq_poly_pow(poly,Psi1,e,ctx);
+						e=fmpz_get_ui(q);
+						fq_poly_pow(poly1,y2,e,ctx);
+						fq_poly_mul(poly,poly,poly1,ctx);
+						fq_poly_mul(poly,poly,gamma1,ctx);
+						
+						e=fmpz_get_ui(q);fmpz_sub_ui(tmp,j,1);
+						Psi(a,b,tmp,Psi1,ctx);fq_poly_pow(poly1,Psi1,e,ctx);
+						fmpz_add_ui(tmp,j,1);Psi(a,b,tmp,Psi1,ctx);
+						fq_poly_pow(poly2,Psi1,e,ctx);
+						fq_poly_mul(poly1,poly1,poly2,ctx);
+						fq_poly_mul(poly1,poly1,teta1,ctx);
+							fq_poly_sub(absc,poly,poly1,ctx);
+						
+						//Verification ordonnée
+						fmpz_mul_ui(tmp,q,3);e=fmpz_get_ui(tmp);
+						Psi(a,b,j,Psi1,ctx);fq_poly_pow(poly,Psi1,e,ctx);
+						fmpz_mul_ui(tmp,q,3);fmpz_sub_ui(tmp,tmp,1);
+						fmpz_divexact_ui(tmp,tmp,2);e=fmpz_get_ui(tmp);
+						fq_poly_pow(poly1,y2,e,ctx);
+						fq_poly_mul(poly,poly,poly1,ctx);
+						fq_poly_mul(poly,poly,gamma2,ctx);
+						fmpz_sub_ui(tmp,j,1);Psi(a,b,tmp,Psi1,ctx);
+						fq_poly_sqr(poly1,Psi1,ctx);
+						fmpz_add_ui(tmp,j,2);Psi(a,b,tmp,Psi1,ctx);
+						fq_poly_mul(poly1,poly1,Psi1,ctx);
+						fmpz_add_ui(tmp,j,1);Psi(a,b,tmp,Psi1,ctx);
+						fq_poly_sqr(poly2,Psi1,ctx);
+						fmpz_sub_ui(tmp,j,2);
+						if(fmpz_cmp_ui(tmp,0)<0){
+							fmpz_neg(tmp,tmp);
+							Psi(a,b,tmp,Psi1,ctx);
+							fq_poly_neg(Psi1,Psi1,ctx);
+						}
+						else{Psi(a,b,tmp,Psi1,ctx);}
+						/*char* var="x";
+						fq_poly_print_pretty(Psi1,var,ctx);flint_printf("\n");*/
+						fq_poly_mul(poly2,poly2,Psi1,ctx);
+						fq_poly_sub(poly1,poly1,poly2,ctx);e=fmpz_get_ui(q);
+						fq_poly_pow(poly1,poly1,e,ctx);fq_poly_mul(poly1,poly1,teta2,ctx);
+						fq_poly_sub(ordo,poly,poly1,ctx);
+					
+					}
+					else{
+						//Verification abcisse
+						fmpz_mul_ui(tmp,q,2);e=fmpz_get_ui(tmp);
+						Psi(a,b,j,Psi1,ctx);fq_poly_pow(poly,Psi1,e,ctx);
+						fq_poly_mul(poly,poly,gamma1,ctx);
+						
+						e=fmpz_get_ui(q);fmpz_sub_ui(tmp,j,1);
+						Psi(a,b,tmp,Psi1,ctx);fq_poly_pow(poly1,Psi1,e,ctx);
+						fmpz_add_ui(tmp,j,1);Psi(a,b,tmp,Psi1,ctx);
+						fq_poly_pow(poly2,Psi1,e,ctx);
+						fq_poly_mul(poly1,poly1,poly2,ctx);
+						e=fmpz_get_ui(q);
+						fq_poly_pow(poly2,y2,e,ctx);
+						fq_poly_mul(poly1,poly1,poly2,ctx);
+						fq_poly_mul(poly1,poly1,teta1,ctx);
+
+						fq_poly_sub(absc,poly,poly1,ctx);
+						
+						//Verification ordonnée
+						fmpz_mul_ui(tmp,q,3);e=fmpz_get_ui(tmp);
+						Psi(a,b,j,Psi1,ctx);fq_poly_pow(poly,Psi1,e,ctx);
+						fq_poly_mul(poly,poly,gamma2,ctx);
+
+						fmpz_sub_ui(tmp,j,1);Psi(a,b,tmp,Psi1,ctx);
+						fq_poly_sqr(poly1,Psi1,ctx);
+						fmpz_add_ui(tmp,j,2);Psi(a,b,tmp,Psi1,ctx);
+						fq_poly_mul(poly1,poly1,Psi1,ctx);
+						fmpz_add_ui(tmp,j,1);Psi(a,b,tmp,Psi1,ctx);
+						fq_poly_sqr(poly2,Psi1,ctx);
+						fmpz_sub_ui(tmp,j,2);
+						if(fmpz_cmp_ui(tmp,0)<0){
+							fmpz_neg(tmp,tmp);
+							Psi(a,b,tmp,Psi1,ctx);
+							fq_poly_neg(Psi1,Psi1,ctx);
+						}
+						else{Psi(a,b,tmp,Psi1,ctx);}
+						/*char* var="x";
+						fq_poly_print_pretty(Psi1,var,ctx);flint_printf("\n");*/
+						fq_poly_mul(poly2,poly2,Psi1,ctx);
+						fq_poly_sub(poly1,poly1,poly2,ctx);e=fmpz_get_ui(q);
+						fq_poly_mul(poly1,poly1,y2,ctx);
+						fq_poly_pow(poly1,poly1,e,ctx);
+						fq_poly_mul(poly1,poly1,teta2,ctx);
+
+						fq_poly_sub(ordo,poly,poly1,ctx);
+					
+					}	
+					
+				}
+
+				else{
+					//Calcul de alpha
+					fmpz_sub_ui(tmp,q_bar,1);Psi(a,b,tmp,Psi1,ctx);
+					fq_poly_sqr(poly, Psi1, ctx);
+					fq_poly_mul(poly,poly,y2,ctx);
+					fmpz_add_ui(tmp,q_bar,2);Psi(a,b,tmp,Psi1,ctx);
+					fq_poly_mul(poly, poly, Psi1, ctx);
+
+					fmpz_add_ui(tmp,q_bar,1);Psi(a,b,tmp,Psi1,ctx);
+					fq_poly_sqr(poly1, Psi1, ctx);
+					fq_poly_mul(poly1,poly1,y2,ctx);
+					fmpz_sub_ui(tmp,q_bar,2);Psi(a,b,tmp,Psi1,ctx);
+					fq_poly_mul(poly1, poly1, Psi1, ctx);
+
+					fq_poly_sub(poly, poly, poly1, ctx);
+
+					Psi(a,b,q_bar,Psi1,ctx);
+					fq_poly_pow(poly1, Psi1, 3, ctx);
+
+					fmpz_pow_ui(tmp, q, 2);
+					fmpz_add_ui(tmp, tmp, 1);
+					fmpz_divexact_ui(tmp, tmp, 2);
+
+					fq_poly_pow(alpha, y2, fmpz_get_ui(tmp), ctx);
+					fq_poly_mul(alpha, alpha, poly1, ctx);
+					fq_set_ui(tmp1, 4, ctx);
+					fq_poly_scalar_mul_fq(alpha, alpha, tmp1, ctx);
+
+					fq_poly_sub(alpha, poly, alpha, ctx);
+
+					//Calcul de beta
+					fmpz_sub_ui(tmp,q_bar,1);Psi(a,b,tmp,Psi1,ctx);
+					fmpz_add_ui(tmp,q_bar,1);Psi(a,b,tmp,Psi2,ctx);
+					fq_poly_mul(poly, Psi1, Psi2, ctx);
+					fq_poly_mul(poly, poly, y2, ctx);
+					
+					Psi(a,b,q_bar,Psi1,ctx);
+					fq_poly_sqr(poly1, Psi1, ctx);
+					fq_poly_mul(poly1,poly1,Phi2,ctx);
+					
+					fq_poly_add(poly, poly1, poly, ctx);
+
+					Psi(a,b,q_bar,Psi1,ctx);
+					fq_poly_mul(poly, poly, Psi1, ctx);
+					fq_set_ui(tmp1, 4, ctx);
+					fq_poly_scalar_mul_fq(poly, poly, tmp1, ctx);
+					fq_poly_neg(beta,poly,ctx);//beta
+					
+					//Calcul de gamma1 et teta1
+					fmpz_sub_ui(tmp,q_bar,1);Psi(a,b,tmp,Psi1,ctx);
+					fmpz_add_ui(tmp,q_bar,1);Psi(a,b,tmp,Psi2,ctx);
+					fq_poly_mul(poly,Psi1,Psi2,ctx);
+					fq_poly_mul(poly,poly,y2,ctx);
+					Psi(a,b,q_bar,Psi1,ctx);fq_poly_sqr(poly1,Psi1,ctx);
+					fq_poly_mul(poly1,poly1,Phi3,ctx);
+					fq_poly_sub(poly,poly1,poly,ctx);
+					fq_poly_sqr(poly1,beta,ctx);
+					fq_poly_mul(poly1,poly1,y2,ctx);
+					fq_poly_mul(poly,poly,poly1,ctx);
+					Psi(a,b,q_bar,Psi1,ctx);fq_poly_sqr(poly1,Psi1,ctx);
+					fq_poly_sqr(poly2,alpha,ctx);
+					fq_poly_mul(poly1,poly1,poly2,ctx);
+					fq_poly_sub(gamma1,poly,poly1,ctx);//gamma1
+
+					Psi(a,b,q_bar,Psi1,ctx);
+					fq_poly_sqr(poly,Psi1,ctx);
+					fq_poly_sqr(poly1,beta,ctx);
+					fq_poly_mul(poly1,poly1,y2,ctx);
+					fq_poly_mul(teta1,poly,poly1,ctx);//teta1
+					
+					//Calcul de gamma2 et teta2
+					fq_poly_pow(poly,beta,3,ctx);fq_poly_mul(poly,poly,y2,ctx);
+					Psi(a,b,q_bar,Psi1,ctx);fq_poly_sqr(poly1,Psi1,ctx);
+					fq_poly_mul(teta2,poly,poly1,ctx);//teta2
+					
+					fq_set_si(tmp1,2,ctx);fmpz_mul(tmp,q,q);e=fmpz_get_ui(tmp);
+					fq_poly_set_coeff(Phi4,e,tmp1,ctx);
+					fq_set_si(tmp1,1,ctx);fq_poly_set_coeff(Phi4,1,tmp1,ctx);
+					
+					Psi(a,b,q_bar,Psi1,ctx);
+					fq_poly_sqr(poly1,Psi1,ctx);fq_poly_mul(poly,Phi4,poly1,ctx);
+					fq_poly_mul(poly,poly,alpha,ctx);fq_poly_sqr(poly1,beta,ctx);
+					fq_poly_mul(poly1,poly1,y2,ctx);fq_poly_mul(poly,poly,poly1,ctx);
+					
+					fq_poly_pow(poly1,alpha,3,ctx);Psi(a,b,q_bar,Psi1,ctx);
+					fq_poly_sqr(poly2,Psi1,ctx);fq_poly_mul(poly1,poly1,poly2,ctx);
+					
+					fq_poly_sub(poly,poly,poly1,ctx);
+										
+					fmpz_sub_ui(tmp,q_bar,1);Psi(a,b,tmp,Psi1,ctx);
+					fmpz_add_ui(tmp,q_bar,1);Psi(a,b,tmp,Psi2,ctx);
+					fq_poly_mul(poly1,Psi1,Psi2,ctx);fq_poly_mul(poly1,poly1,alpha,ctx);
+					fq_poly_sqr(poly2,beta,ctx);
+					fq_poly_mul(poly2,poly2,y2,ctx);fq_poly_mul(poly2,poly2,y2,ctx);
+					fq_poly_mul(poly1,poly1,poly2,ctx);
+					
+					fq_poly_sub(poly,poly,poly1,ctx);
+					
+					fmpz_mul(tmp,q,q);fmpz_add_ui(tmp,tmp,3);
+					fmpz_divexact_ui(tmp,tmp,2);e=fmpz_get_ui(tmp);
+					fq_poly_pow(poly1,y2,e,ctx);Psi(a,b,q_bar,Psi1,ctx);
+					fq_poly_sqr(poly2,Psi1,ctx);fq_poly_mul(poly1,poly1,poly2,ctx);
+					fq_poly_pow(poly2,beta,3,ctx);fq_poly_mul(poly1,poly1,poly2,ctx);
+					
+					fq_poly_sub(poly,poly,poly1,ctx);
+					
+					fmpz_sub_ui(tmp, q, 1);fmpz_divexact_ui(tmp, tmp, 2);
+					e=fmpz_get_ui(tmp);fq_poly_pow(poly1,y2,e,ctx);
+					fq_set_ui(tmp1,4,ctx);
+					fq_poly_scalar_mul_fq(poly1,poly1,tmp1,ctx);
+					
+					fq_poly_mul(gamma2,poly,poly1,ctx);//gamma2
+					
+					if(fmpz_is_even(j)){
+						//Verification abcisse
+						fmpz_mul_ui(tmp,q,2);e=fmpz_get_ui(tmp);
+						Psi(a,b,j,Psi1,ctx);fq_poly_pow(poly,Psi1,e,ctx);
+						e=fmpz_get_ui(q);
+						fq_poly_pow(poly1,y2,e,ctx);
+						fq_poly_mul(poly,poly,poly1,ctx);
+						fq_poly_mul(poly,poly,gamma1,ctx);
+						
+						e=fmpz_get_ui(q);fmpz_sub_ui(tmp,j,1);
+						Psi(a,b,tmp,Psi1,ctx);fq_poly_pow(poly1,Psi1,e,ctx);
+						fmpz_add_ui(tmp,j,1);Psi(a,b,tmp,Psi1,ctx);
+						fq_poly_pow(poly2,Psi1,e,ctx);
+						fq_poly_mul(poly1,poly1,poly2,ctx);
+						fq_poly_mul(poly1,poly1,teta1,ctx);
+
+						fq_poly_sub(absc,poly,poly1,ctx);
+						
+						//Verification ordonnée
+						fmpz_mul_ui(tmp,q,3);e=fmpz_get_ui(tmp);
+						Psi(a,b,j,Psi1,ctx);fq_poly_pow(poly,Psi1,e,ctx);
+						fmpz_mul_ui(tmp,q,3);fmpz_sub_ui(tmp,tmp,1);
+						fmpz_divexact_ui(tmp,tmp,2);e=fmpz_get_ui(tmp);
+						fq_poly_pow(poly1,y2,e,ctx);
+						fq_poly_mul(poly,poly,poly1,ctx);
+						fq_poly_mul(poly,poly,gamma2,ctx);
+
+						fmpz_sub_ui(tmp,j,1);Psi(a,b,tmp,Psi1,ctx);
+						fq_poly_sqr(poly1,Psi1,ctx);
+						fmpz_add_ui(tmp,j,2);Psi(a,b,tmp,Psi1,ctx);
+						fq_poly_mul(poly1,poly1,Psi1,ctx);
+						fmpz_add_ui(tmp,j,1);Psi(a,b,tmp,Psi1,ctx);
+						fq_poly_sqr(poly2,Psi1,ctx);
+						fmpz_sub_ui(tmp,j,2);
+						if(fmpz_cmp_ui(tmp,0)<0){
+							fmpz_neg(tmp,tmp);
+							Psi(a,b,tmp,Psi1,ctx);
+							fq_poly_neg(Psi1,Psi1,ctx);
+						}
+						else{Psi(a,b,tmp,Psi1,ctx);}
+						/*char* var="x";
+						fq_poly_print_pretty(Psi1,var,ctx);flint_printf("\n");*/
+						fq_poly_mul(poly2,poly2,Psi1,ctx);
+						fq_poly_sub(poly1,poly1,poly2,ctx);e=fmpz_get_ui(q);
+						fq_poly_pow(poly1,poly1,e,ctx);fq_poly_mul(poly1,poly1,teta2,ctx);
+
+						fq_poly_sub(ordo,poly,poly1,ctx);
+					
+					}
+					else{
+						//Verification abcisse
+						fmpz_mul_ui(tmp,q,2);e=fmpz_get_ui(tmp);
+						Psi(a,b,j,Psi1,ctx);fq_poly_pow(poly,Psi1,e,ctx);
+						fq_poly_mul(poly,poly,gamma1,ctx);
+						
+						e=fmpz_get_ui(q);fmpz_sub_ui(tmp,j,1);
+						Psi(a,b,tmp,Psi1,ctx);fq_poly_pow(poly1,Psi1,e,ctx);
+						fmpz_add_ui(tmp,j,1);Psi(a,b,tmp,Psi1,ctx);
+						fq_poly_pow(poly2,Psi1,e,ctx);
+						fq_poly_mul(poly1,poly1,poly2,ctx);
+						e=fmpz_get_ui(q);
+						fq_poly_pow(poly2,y2,e,ctx);
+						fq_poly_mul(poly1,poly1,poly2,ctx);
+						fq_poly_mul(poly1,poly1,teta1,ctx);
+
+						fq_poly_sub(absc,poly,poly1,ctx);
+						
+						//Verification ordonnée
+						fmpz_mul_ui(tmp,q,3);e=fmpz_get_ui(tmp);
+						Psi(a,b,j,Psi1,ctx);fq_poly_pow(poly,Psi1,e,ctx);
+						fq_poly_mul(poly,poly,gamma2,ctx);
+
+						fmpz_sub_ui(tmp,j,1);Psi(a,b,tmp,Psi1,ctx);
+						fq_poly_sqr(poly1,Psi1,ctx);
+						fmpz_add_ui(tmp,j,2);Psi(a,b,tmp,Psi1,ctx);
+						fq_poly_mul(poly1,poly1,Psi1,ctx);
+						fmpz_add_ui(tmp,j,1);Psi(a,b,tmp,Psi1,ctx);
+						fq_poly_sqr(poly2,Psi1,ctx);
+						fmpz_sub_ui(tmp,j,2);
+						if(fmpz_cmp_ui(tmp,0)<0){
+							fmpz_neg(tmp,tmp);
+							Psi(a,b,tmp,Psi1,ctx);
+							fq_poly_neg(Psi1,Psi1,ctx);
+						}
+						else{Psi(a,b,tmp,Psi1,ctx);}
+						/*char* var="x";
+						fq_poly_print_pretty(Psi1,var,ctx);flint_printf("\n");*/
+						fq_poly_mul(poly2,poly2,Psi1,ctx);
+						fq_poly_sub(poly1,poly1,poly2,ctx);e=fmpz_get_ui(q);
+						fq_poly_mul(poly1,poly1,y2,ctx);
+						fq_poly_pow(poly1,poly1,e,ctx);
+						fq_poly_mul(poly1,poly1,teta2,ctx);
+
+						fq_poly_sub(ordo,poly,poly1,ctx);
+					}
+				}
+			
+			
+			/*fmpz_one(j);
+			fmpz_add_ui(tmp,l,1);fmpz_divexact_ui(tmp,tmp,2);
+			while(fmpz_cmp(j,tmp)<=0){
 				if(fmpz_is_even(j)){
 					//Verification abcisse
 					fmpz_mul_ui(tmp,q,2);e=fmpz_get_ui(tmp);
@@ -583,7 +784,15 @@ void schoof(fq_t a,fq_t b,fq_ctx_t ctx,fmpz_t q){
 					fq_poly_mul(poly1,poly1,Psi1,ctx);
 					fmpz_add_ui(tmp,j,1);Psi(a,b,tmp,Psi1,ctx);
 					fq_poly_sqr(poly2,Psi1,ctx);
-					fmpz_sub_ui(tmp,j,2);Psi(a,b,tmp,Psi1,ctx);
+					fmpz_sub_ui(tmp,j,2);
+					if(fmpz_cmp_ui(tmp,0)<0){
+						fmpz_neg(tmp,tmp);
+						Psi(a,b,tmp,Psi1,ctx);
+						fq_poly_neg(Psi1,Psi1,ctx);
+					}
+					else{Psi(a,b,tmp,Psi1,ctx);}
+					char* var="x";
+					fq_poly_print_pretty(Psi1,var,ctx);flint_printf("\n");
 					fq_poly_mul(poly2,poly2,Psi1,ctx);
 					fq_poly_sub(poly1,poly1,poly2,ctx);e=fmpz_get_ui(q);
 					fq_poly_pow(poly1,poly1,e,ctx);fq_poly_mul(poly1,poly1,teta2,ctx);
@@ -620,28 +829,46 @@ void schoof(fq_t a,fq_t b,fq_ctx_t ctx,fmpz_t q){
 					fq_poly_mul(poly1,poly1,Psi1,ctx);
 					fmpz_add_ui(tmp,j,1);Psi(a,b,tmp,Psi1,ctx);
 					fq_poly_sqr(poly2,Psi1,ctx);
-					fmpz_sub_ui(tmp,j,2);Psi(a,b,tmp,Psi1,ctx);
+					fmpz_sub_ui(tmp,j,2);
+					if(fmpz_cmp_ui(tmp,0)<0){
+						fmpz_neg(tmp,tmp);
+						Psi(a,b,tmp,Psi1,ctx);
+						fq_poly_neg(Psi1,Psi1,ctx);
+					}
+					else{Psi(a,b,tmp,Psi1,ctx);}
 					fq_poly_mul(poly2,poly2,Psi1,ctx);
 					fq_poly_sub(poly1,poly1,poly2,ctx);e=fmpz_get_ui(q);
-					fq_poly_pow(poly1,poly1,e,ctx);
 					fq_poly_mul(poly1,poly1,y2,ctx);
+					fq_poly_pow(poly1,poly1,e,ctx);
 					fq_poly_mul(poly1,poly1,teta2,ctx);
 
 					fq_poly_sub(ordo,poly,poly1,ctx);
-				}
+				}*/
 									
 				//Calcul du pgcd
-				fq_poly_gcd(poly,absc,Psi2,ctx);fq_poly_gcd(poly1,ordo,Psi2,ctx);		
-				if((!fq_poly_is_one(poly,ctx))&&(!fq_poly_is_one(poly1,ctx))){
-					fmpz_CRT(t, t, c, j, l, 0);
+				Psi(a,b,l,Psi2,ctx);
+				fq_poly_gcd(poly,absc,Psi2,ctx);fq_poly_gcd(poly1,ordo,Psi2,ctx);
+					
+				if((!fq_poly_is_one(poly,ctx))){
+					if((!fq_poly_is_one(poly1,ctx))){
+						fmpz_CRT(t, t, c, j, l, 1);
+						fmpz_print(tmp);printf("mod");fmpz_print(l);flint_printf("\n");
+					}
+					else{
+						fmpz_neg(tmp2,j);
+						fmpz_CRT(t, t, c, tmp2, l, 1);
+						fmpz_print(tmp2);printf("mod");fmpz_print(l);flint_printf("\n");
+					}
+					break;
 				}
 								
 				fmpz_add_ui(j,j,1);
 			}
 			
 		}
-
+		
 		fmpz_mul(c,c,l);
+		fmpz_print(l);flint_printf("\n");
 		fnext_prime(l);
 		if(fmpz_cmp(l,fq_ctx_prime(ctx))==0){fnext_prime(l);}
 	}
@@ -652,7 +879,7 @@ void schoof(fq_t a,fq_t b,fq_ctx_t ctx,fmpz_t q){
 	fmpz_print(tmp);flint_printf("\n");//Le cardinal
 	
 	fq_clear(tmp1,ctx);fmpz_clear(l);fmpz_clear(c);
-	fmpz_clear(q_sqrt);fmpz_clear(tmp);fmpz_clear(t);
+	fmpz_clear(q_sqrt);fmpz_clear(tmp);fmpz_clear(tmp2);fmpz_clear(t);
 	fmpz_clear(p);fmpz_clear(j);fmpz_clear(q_bar);
 	fmpz_clear(w);fq_poly_clear(y2,ctx);
 	fq_poly_clear(Phi1,ctx);fq_poly_clear(Phi2,ctx);

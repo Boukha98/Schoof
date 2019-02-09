@@ -191,16 +191,18 @@ void schoof(fq_t a,fq_t b,fq_ctx_t ctx,fmpz_t q){
 	while(fmpz_cmp(c,q_sqrt)<=0){
 		//q_bar = q mod l
 		fmpz_mod(q_bar, q, l);
-		/*fmpz_sub_ui(tmp,l,1);
-		fmpz_divexact_ui(tmp, tmp, 2); //tmp = l/2
+		fmpz_sub_ui(tmp,l,1);
+		fmpz_divexact_ui(tmp, tmp, 2); //tmp = l-1/2
 		if(fmpz_cmp(q_bar, tmp)>0){
 			fmpz_sub(q_bar, q_bar, l);//q_bar = q_bar - l
-		}*/
+		}
 		
 		//Cas q_bar impair
 	    	if(fmpz_is_odd(q_bar)){
 			Psi(a,b,q_bar,Psi1,ctx);fq_poly_sqr(poly, Psi1, ctx);
-		    	fq_poly_mul(poly, poly, Phi2, ctx);fmpz_sub_ui(tmp,q_bar,1);
+		    	fq_poly_mul(poly, poly, Phi2, ctx);
+		    	
+		    	fmpz_sub_ui(tmp,q_bar,1);
 			Psi(a,b,tmp,Psi1,ctx);fmpz_add_ui(tmp,q_bar,1);
 			Psi(a,b,tmp,Psi2,ctx);
 		    	fq_poly_mul(poly1, Psi1, Psi2, ctx);
@@ -213,6 +215,7 @@ void schoof(fq_t a,fq_t b,fq_ctx_t ctx,fmpz_t q){
 		    	Psi(a,b,q_bar,Psi1,ctx);fq_poly_sqr(poly, Psi1, ctx);
 		    	fq_poly_mul(poly, poly, Phi2, ctx);
 		    	fq_poly_mul(poly, poly, y2, ctx);
+		    	
 			fmpz_sub_ui(tmp,q_bar,1);
 			Psi(a,b,tmp,Psi1,ctx);fmpz_add_ui(tmp,q_bar,1);
 			Psi(a,b,tmp,Psi2,ctx);
@@ -244,11 +247,13 @@ void schoof(fq_t a,fq_t b,fq_ctx_t ctx,fmpz_t q){
 					Psi(a,b,w,Psi1,ctx);
 			    		fq_poly_sqr(poly, Psi1, ctx);
 			    		fq_poly_mul(poly, poly, Phi1, ctx);
+			    		
 					fmpz_sub_ui(tmp,w,1);
 					Psi(a,b,tmp,Psi1,ctx);fmpz_add_ui(tmp,w,1);
 					Psi(a,b,tmp,Psi2,ctx);
 			    		fq_poly_mul(poly1, Psi1, Psi2, ctx);
 			    		fq_poly_mul(poly1, poly1, y2, ctx);
+			    		
 			    		fq_poly_add(poly, poly, poly1, ctx);
 			    	}
 
@@ -257,10 +262,12 @@ void schoof(fq_t a,fq_t b,fq_ctx_t ctx,fmpz_t q){
 			    		Psi(a,b,w,Psi1,ctx);fq_poly_sqr(poly, Psi1, ctx);
 			    		fq_poly_mul(poly, poly, Phi1, ctx);
 			    		fq_poly_mul(poly, poly, y2, ctx);
+			    		
 					fmpz_sub_ui(tmp,w,1);
 					Psi(a,b,tmp,Psi1,ctx);fmpz_add_ui(tmp,w,1);
 					Psi(a,b,tmp,Psi2,ctx);
 			    		fq_poly_mul(poly1, Psi1, Psi2, ctx);
+			    		
 			    		fq_poly_add(poly, poly, poly1, ctx);
 			    	}
 
@@ -277,12 +284,12 @@ void schoof(fq_t a,fq_t b,fq_ctx_t ctx,fmpz_t q){
 
 				//Cas pgcd différent de 1
 				else{
-					//Cas w impair
-					if(fmpz_is_odd(w)){
+					//Cas w pair
+					if(fmpz_is_even(w)){
 				    		fmpz_add_ui(tmp, q, 3);
 			    			fmpz_divexact_ui(tmp, tmp, 2);
 			    		}
-			    		//Cas w pair
+			    		//Cas w impair
 			    		else{
 			    			fmpz_sub_ui(tmp, q, 1);
 			    			fmpz_divexact_ui(tmp, tmp, 2);
@@ -294,15 +301,19 @@ void schoof(fq_t a,fq_t b,fq_ctx_t ctx,fmpz_t q){
 			    		fq_poly_mul(poly, poly, poly1, ctx);
 					fq_set_ui(tmp1,4,ctx);
 			    		fq_poly_scalar_mul_fq(poly, poly, tmp1, ctx);
+			    		
 			    		fmpz_sub_ui(tmp,w,1);Psi(a,b,tmp,Psi1,ctx);
 			    		fq_poly_pow(poly1, Psi1, 2, ctx);
 					fmpz_add_ui(tmp,w,2);Psi(a,b,tmp,Psi1,ctx);
-			    		fq_poly_mul(poly1, poly1, Psi1, ctx);	
+			    		fq_poly_mul(poly1, poly1, Psi1, ctx);
+			    			
 			    		fq_poly_sub(poly, poly, poly1, ctx);
+			    		
 					fmpz_add_ui(tmp,w,1);Psi(a,b,tmp,Psi1,ctx);
 					fq_poly_pow(poly1, Psi1, 2, ctx);
 					fmpz_sub_ui(tmp,w,2);Psi(a,b,tmp,Psi1,ctx);
 			    		fq_poly_mul(poly1, poly1, Psi1, ctx);
+			    		
 			    		fq_poly_add(poly, poly, poly1, ctx);
 			    				
 			    		//Calcul du pgcd
@@ -327,7 +338,7 @@ void schoof(fq_t a,fq_t b,fq_ctx_t ctx,fmpz_t q){
 		//Il n'existe pas point de l-torsion tq Phi^2(P)=+-[q_bar]P
 		else{
 			fmpz_one(j);
-			fmpz_add_ui(tmp,l,1);fmpz_divexact_ui(tmp,tmp,2);
+			fmpz_sub_ui(tmp,l,1);fmpz_divexact_ui(tmp,tmp,2);
 			while(fmpz_cmp(j,tmp)<=0){
 				if(fmpz_is_even(q_bar)){
 					//Calcul de alpha
@@ -379,18 +390,23 @@ void schoof(fq_t a,fq_t b,fq_ctx_t ctx,fmpz_t q){
 					fmpz_sub_ui(tmp,q_bar,1);Psi(a,b,tmp,Psi1,ctx);
 					fmpz_add_ui(tmp,q_bar,1);Psi(a,b,tmp,Psi2,ctx);
 					fq_poly_mul(poly,Psi1,Psi2,ctx);
+					
 					Psi(a,b,q_bar,Psi1,ctx);fq_poly_sqr(poly1,Psi1,ctx);
 					fq_poly_mul(poly1,poly1,Phi3,ctx);
 					fq_poly_mul(poly1,poly1,y2,ctx);
-					fq_poly_sub(poly,poly1,poly,ctx);
+					
+					fq_poly_sub(poly,poly,poly1,ctx);
+					
 					fq_poly_sqr(poly1,beta,ctx);
 					fq_poly_mul(poly,poly,poly1,ctx);
+					
 					Psi(a,b,q_bar,Psi1,ctx);fq_poly_sqr(poly1,Psi1,ctx);
 					fq_poly_mul(poly1,poly1,y2,ctx);
 					fq_poly_mul(poly1,poly1,y2,ctx);
 					fq_poly_sqr(poly2,alpha,ctx);
 					fq_poly_mul(poly1,poly1,poly2,ctx);
-					fq_poly_sub(gamma1,poly,poly1,ctx);//gamma1
+					
+					fq_poly_add(gamma1,poly,poly1,ctx);//gamma1
 
 					Psi(a,b,q_bar,Psi1,ctx);
 					fq_poly_sqr(poly,Psi1,ctx);
@@ -456,7 +472,7 @@ void schoof(fq_t a,fq_t b,fq_ctx_t ctx,fmpz_t q){
 						fq_poly_pow(poly2,Psi1,e,ctx);
 						fq_poly_mul(poly1,poly1,poly2,ctx);
 						fq_poly_mul(poly1,poly1,teta1,ctx);
-							fq_poly_sub(absc,poly,poly1,ctx);
+						fq_poly_add(absc,poly,poly1,ctx);
 						
 						//Verification ordonnée
 						fmpz_mul_ui(tmp,q,3);e=fmpz_get_ui(tmp);
@@ -466,6 +482,7 @@ void schoof(fq_t a,fq_t b,fq_ctx_t ctx,fmpz_t q){
 						fq_poly_pow(poly1,y2,e,ctx);
 						fq_poly_mul(poly,poly,poly1,ctx);
 						fq_poly_mul(poly,poly,gamma2,ctx);
+						
 						fmpz_sub_ui(tmp,j,1);Psi(a,b,tmp,Psi1,ctx);
 						fq_poly_sqr(poly1,Psi1,ctx);
 						fmpz_add_ui(tmp,j,2);Psi(a,b,tmp,Psi1,ctx);
@@ -484,6 +501,10 @@ void schoof(fq_t a,fq_t b,fq_ctx_t ctx,fmpz_t q){
 						fq_poly_mul(poly2,poly2,Psi1,ctx);
 						fq_poly_sub(poly1,poly1,poly2,ctx);e=fmpz_get_ui(q);
 						fq_poly_pow(poly1,poly1,e,ctx);fq_poly_mul(poly1,poly1,teta2,ctx);
+						fmpz_sub_ui(tmp,q,1);fmpz_divexact_ui(tmp,tmp,2);
+						e=fmpz_get_ui(tmp);fq_poly_pow(poly,y2,e,ctx);
+						fq_poly_mul(poly1,poly1,poly2,ctx);
+						
 						fq_poly_sub(ordo,poly,poly1,ctx);
 					
 					}
@@ -503,7 +524,7 @@ void schoof(fq_t a,fq_t b,fq_ctx_t ctx,fmpz_t q){
 						fq_poly_mul(poly1,poly1,poly2,ctx);
 						fq_poly_mul(poly1,poly1,teta1,ctx);
 
-						fq_poly_sub(absc,poly,poly1,ctx);
+						fq_poly_add(absc,poly,poly1,ctx);
 						
 						//Verification ordonnée
 						fmpz_mul_ui(tmp,q,3);e=fmpz_get_ui(tmp);
@@ -555,11 +576,9 @@ void schoof(fq_t a,fq_t b,fq_ctx_t ctx,fmpz_t q){
 
 					Psi(a,b,q_bar,Psi1,ctx);
 					fq_poly_pow(poly1, Psi1, 3, ctx);
-
 					fmpz_pow_ui(tmp, q, 2);
 					fmpz_add_ui(tmp, tmp, 1);
 					fmpz_divexact_ui(tmp, tmp, 2);
-
 					fq_poly_pow(alpha, y2, fmpz_get_ui(tmp), ctx);
 					fq_poly_mul(alpha, alpha, poly1, ctx);
 					fq_set_ui(tmp1, 4, ctx);
@@ -590,16 +609,20 @@ void schoof(fq_t a,fq_t b,fq_ctx_t ctx,fmpz_t q){
 					fmpz_add_ui(tmp,q_bar,1);Psi(a,b,tmp,Psi2,ctx);
 					fq_poly_mul(poly,Psi1,Psi2,ctx);
 					fq_poly_mul(poly,poly,y2,ctx);
+					
 					Psi(a,b,q_bar,Psi1,ctx);fq_poly_sqr(poly1,Psi1,ctx);
 					fq_poly_mul(poly1,poly1,Phi3,ctx);
-					fq_poly_sub(poly,poly1,poly,ctx);
+					
+					fq_poly_sub(poly,poly,poly1,ctx);
+					
 					fq_poly_sqr(poly1,beta,ctx);
 					fq_poly_mul(poly1,poly1,y2,ctx);
 					fq_poly_mul(poly,poly,poly1,ctx);
+					
 					Psi(a,b,q_bar,Psi1,ctx);fq_poly_sqr(poly1,Psi1,ctx);
 					fq_poly_sqr(poly2,alpha,ctx);
 					fq_poly_mul(poly1,poly1,poly2,ctx);
-					fq_poly_sub(gamma1,poly,poly1,ctx);//gamma1
+					fq_poly_add(gamma1,poly,poly1,ctx);//gamma1
 
 					Psi(a,b,q_bar,Psi1,ctx);
 					fq_poly_sqr(poly,Psi1,ctx);
@@ -666,7 +689,7 @@ void schoof(fq_t a,fq_t b,fq_ctx_t ctx,fmpz_t q){
 						fq_poly_mul(poly1,poly1,poly2,ctx);
 						fq_poly_mul(poly1,poly1,teta1,ctx);
 
-						fq_poly_sub(absc,poly,poly1,ctx);
+						fq_poly_add(absc,poly,poly1,ctx);
 						
 						//Verification ordonnée
 						fmpz_mul_ui(tmp,q,3);e=fmpz_get_ui(tmp);
@@ -695,8 +718,12 @@ void schoof(fq_t a,fq_t b,fq_ctx_t ctx,fmpz_t q){
 						fq_poly_mul(poly2,poly2,Psi1,ctx);
 						fq_poly_sub(poly1,poly1,poly2,ctx);e=fmpz_get_ui(q);
 						fq_poly_pow(poly1,poly1,e,ctx);fq_poly_mul(poly1,poly1,teta2,ctx);
-
+						fmpz_sub_ui(tmp,q,1);fmpz_divexact_ui(tmp,tmp,2);
+						e=fmpz_get_ui(tmp);fq_poly_pow(poly2,y2,e,ctx);
+						fq_poly_mul(poly1,poly1,poly2,ctx);
+						
 						fq_poly_sub(ordo,poly,poly1,ctx);
+						fq_poly_mul(ordo,ordo,y2,ctx);
 					
 					}
 					else{
@@ -715,7 +742,7 @@ void schoof(fq_t a,fq_t b,fq_ctx_t ctx,fmpz_t q){
 						fq_poly_mul(poly1,poly1,poly2,ctx);
 						fq_poly_mul(poly1,poly1,teta1,ctx);
 
-						fq_poly_sub(absc,poly,poly1,ctx);
+						fq_poly_add(absc,poly,poly1,ctx);
 						
 						//Verification ordonnée
 						fmpz_mul_ui(tmp,q,3);e=fmpz_get_ui(tmp);
@@ -894,12 +921,12 @@ void schoof(fq_t a,fq_t b,fq_ctx_t ctx,fmpz_t q){
 }
 
 int main(){
-	fmpz_t p;fmpz_init(p);fmpz_set_ui(p,101);
+	fmpz_t p;fmpz_init(p);fmpz_set_ui(p,109);
 	signed long d = 1;char *var="x";fq_ctx_t ctx;
 	fq_ctx_init(ctx, p, d, var);
 	
 	fq_t a,b;fq_init(a,ctx);fq_init(b,ctx);
-	fq_set_ui(a,1,ctx);fq_set_ui(b,0,ctx);
+	fq_set_ui(a,3,ctx);fq_set_ui(b,3,ctx);
 	
 	/*
 	fmpz_t k;fmpz_init(k);fmpz_set_ui(k,4);

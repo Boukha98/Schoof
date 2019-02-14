@@ -42,7 +42,7 @@ void fq_init_curve(elliptic_curve E, fq_ctx_t ctx){
 }
 
 void div_poly(fq_poly_t *Psi, elliptic_curve E, 
-		signed long k, fq_ctx_t ctx, point P){
+		signed long k, fq_ctx_t ctx){
 	fq_t tmp, tmp1;
 	fq_poly_t poly;
 	fq_poly_init(poly, ctx);
@@ -82,7 +82,7 @@ void div_poly(fq_poly_t *Psi, elliptic_curve E,
 	fq_poly_zero(Psi[0], ctx); //Psi_0 = 0
 	fq_poly_one(Psi[1], ctx); //Psi_1 = 1
 	fq_set_ui(tmp, 2, ctx);
-	fq_mul(tmp, P.y, tmp, ctx);
+	//fq_mul(tmp, P.y, tmp, ctx);
 	fq_poly_set_fq(Psi[2], tmp, ctx); //Psi_2 = 2 
 	
 	//Psi_3 = 3x^4+6ax^2+12bx-a^2
@@ -122,7 +122,9 @@ void div_poly(fq_poly_t *Psi, elliptic_curve E,
 	fq_sub(tmp, tmp1, tmp, ctx);
 	fq_mul_ui(tmp, tmp, 4, ctx);
 	fq_poly_set_coeff(Psi[4], 0, tmp, ctx);
-	fq_poly_scalar_mul_fq(Psi[4], Psi[4], P.y, ctx);
+	//fq_poly_scalar_mul_fq(Psi[4], Psi[4], P.y, ctx);
+	fq_set_ui(tmp, -1, ctx);
+	fq_poly_set_fq(Psi[-1], tmp, ctx);
 
 	fq_clear(tmp, ctx);fq_clear(tmp1, ctx);
 	//Récurrence
@@ -139,7 +141,7 @@ void div_poly(fq_poly_t *Psi, elliptic_curve E,
 			fq_poly_sub(poly, poly, Psi[i], ctx);
 			fq_set_ui(tmp, 2, ctx);
 			fq_inv(tmp, tmp, ctx);
-			fq_mul(tmp, tmp, P.y, ctx);
+			//fq_mul(tmp, tmp, P.y, ctx);
 			fq_poly_scalar_mul_fq(Psi[i], Psi[m], tmp, ctx);
 			fq_poly_mul(Psi[i], Psi[i], poly, ctx);
 		}
@@ -168,6 +170,7 @@ void div_poly(fq_poly_t *Psi, elliptic_curve E,
 			}
 		}
 	}
+
 	fq_clear(tmp1, ctx); fq_clear(tmp, ctx);
 	fq_poly_clear(poly, ctx); fq_poly_clear(y2, ctx);
 	fq_ctx_clear(ctx);
@@ -177,30 +180,32 @@ void div_poly(fq_poly_t *Psi, elliptic_curve E,
 int main(){
 	fq_poly_t *Psi; 
 	elliptic_curve E;
-	signed long k = 13;
+	signed long k = 20;
 	const char* var = "x";
 	fmpz_t p; // Premier
 	fq_ctx_t ctx; // F_p
 	fmpz_set_ui(p, 101);
 	fq_ctx_init(ctx, p, 1, var);
-	
+	/*
 	point P;
 	fq_init_point(P, ctx);
 	fq_set_ui(P.x, 1, ctx);
-	fq_set_ui(P.y, 0, ctx);// P=(1,0)
-	
+	fq_set_ui(P.y, 1, ctx);// P=(1,0)
+	*/
 	fq_init_curve(E, ctx);
 	fq_set_ui(E.a, 100, ctx);
 	fq_set_ui(E.b, 0, ctx);
 	slong i;
-	Psi = malloc((k + 1) * sizeof(fq_poly_t));
-	div_poly(Psi, E, k, ctx, P);
+	Psi = malloc((k + 2) * sizeof(fq_poly_t));
+	div_poly(Psi, E, k, ctx);
 	for(i = 0; i < k+1; i++){
-		flint_printf("Psi[%lu] =",i);fq_poly_print_pretty(Psi[i], var, ctx) ;flint_printf("\n\n");
+		flint_printf("Psi[%lu] =",i);
+		fq_poly_print_pretty(Psi[i], var, ctx) ;flint_printf("\n\n");
 	}
 	fmpz_clear(p);
+
 	fq_ctx_clear(ctx);
-	for(i = 0; i < k + 1; i++){
+	for(i = 0; i < k + 2; i++){
  		fq_poly_clear(Psi[i], ctx);
 	}	
 	free(Psi);

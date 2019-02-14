@@ -17,7 +17,7 @@ void fnext_prime(fmpz_t l){
 void Psi(fq_t a,fq_t b,fmpz_t l,fq_poly_t Psi1,fq_ctx_t ctx){
 	fmpz_t n,i,k,tmp4;
 	fmpz_init(i);fmpz_zero(i);
-	fmpz_init(k);fmpz_set_ui(k,5);
+	fmpz_init(k);fmpz_set_si(k,5);
 	if(fmpz_cmp(k,l)<=0){fmpz_add_ui(k,l,1);}
 	fq_poly_t Psi[fmpz_get_ui(k)];
 	fq_t tmp,tmp1;
@@ -76,7 +76,7 @@ void Psi(fq_t a,fq_t b,fmpz_t l,fq_poly_t Psi1,fq_ctx_t ctx){
 	
 	/* Psim, si n>=3 */
 	if(fmpz_cmp_ui(n,3)>=0){
-		fmpz_set_ui(i,3);
+		fmpz_set_si(i,3);
 		while(fmpz_cmp(i,n)<=0){
 			fmpz_sub_ui(tmp4,i,1);fq_poly_sqr(tmp2,Psi[fmpz_get_ui(tmp4)],ctx);
 			fmpz_add_ui(tmp4,i,2);fq_poly_mul(tmp2,tmp2,Psi[fmpz_get_ui(tmp4)],ctx);
@@ -172,19 +172,19 @@ void schoof(fq_t a,fq_t b,fq_ctx_t ctx,fmpz_t q){
 	//pgcd(Phi1, y2)
 	fq_poly_gcd(poly, Phi1, y2, ctx);
 	
-	fmpz_set_ui(l,2);
+	fmpz_set_si(l,2);
 	
 	//Pour l=2
 	if(fq_poly_is_one(poly,ctx)){
-		fmpz_set_ui(t, 1);
+		fmpz_set_si(t, 1);
 	}
-	else{fmpz_set_ui(t, 0);}
+	else{fmpz_set_si(t, 0);}
 	fmpz_print(t);printf("mod");fmpz_print(l);flint_printf("\n");
 	
 	fmpz_print(t);fmpz_print(l);flint_printf("\n");
 	
 	fmpz_sqrt(q_sqrt,q);fmpz_mul_ui(q_sqrt,q_sqrt,4);
-	fmpz_set_ui(l,3);fmpz_set_ui(c,2);
+	fmpz_set_si(l,3);fmpz_set_si(c,2);
 	
 	while(fmpz_cmp(c,q_sqrt)<=0){
 		//q_bar = q mod l
@@ -284,9 +284,7 @@ void schoof(fq_t a,fq_t b,fq_ctx_t ctx,fmpz_t q){
 					fmpz_CRT(t, t, c, tmp, l, 1);
 					fmpz_print(tmp);printf("mod");fmpz_print(l);flint_printf("\n");
 				}
-
-				//Cas pgcd différent de 1
-				else{
+				else{//Cas pgcd différent de 1
 					//Cas w pair
 					if(fmpz_is_even(w)){
 				    		fmpz_add_ui(tmp, q, 3);
@@ -314,7 +312,13 @@ void schoof(fq_t a,fq_t b,fq_ctx_t ctx,fmpz_t q){
 			    		
 					fmpz_add_ui(tmp,w,1);Psi(a,b,tmp,Psi1,ctx);
 					fq_poly_pow(poly1, Psi1, 2, ctx);
-					fmpz_sub_ui(tmp,w,2);Psi(a,b,tmp,Psi1,ctx);
+					fmpz_sub_ui(tmp,w,2);
+					if(fmpz_cmp_ui(tmp,0)<0){
+						fmpz_neg(tmp,tmp);
+						Psi(a,b,tmp,Psi1,ctx);
+						fq_poly_neg(Psi1,Psi1,ctx);
+					}
+					else{Psi(a,b,tmp,Psi1,ctx);}
 			    		fq_poly_mul(poly1, poly1, Psi1, ctx);
 			    		
 			    		fq_poly_add(poly, poly, poly1, ctx);
@@ -323,11 +327,11 @@ void schoof(fq_t a,fq_t b,fq_ctx_t ctx,fmpz_t q){
 					Psi(a,b,l,Psi1,ctx);
 				    	fq_poly_gcd(poly, poly, Psi1, ctx);
 				    		
-			    		fmpz_mul_ui(tmp, w, 2);//tmp=2*w
+			    		fmpz_mul_si(tmp, w, 2);//tmp=2*w
 
 			    		//pgcd = 1 cad t n'est pas 2w[l]: t = -2w[l]
 			    		if(fq_poly_is_one(poly, ctx)){
-				    		fmpz_negmod(tmp, tmp, l);
+				    		fmpz_neg(tmp, tmp);
 				    	}
 
 			      		fmpz_CRT(t, t, c, tmp, l, 1);//TRC
@@ -930,15 +934,15 @@ void schoof(fq_t a,fq_t b,fq_ctx_t ctx,fmpz_t q){
 }
 
 int main(){
-	fmpz_t p;fmpz_init(p);fmpz_set_ui(p,13);
+	fmpz_t p;fmpz_init(p);fmpz_set_si(p,131);
 	signed long d = 1;char *var="x";fq_ctx_t ctx;
 	fq_ctx_init(ctx, p, d, var);
 	
 	fq_t a,b;fq_init(a,ctx);fq_init(b,ctx);
-	fq_set_si(a,-3,ctx);fq_set_si(b,3,ctx);
+	fq_set_si(a,100,ctx);fq_set_si(b,151,ctx);
 	
 	/*
-	fmpz_t k;fmpz_init(k);fmpz_set_ui(k,4);
+	fmpz_t k;fmpz_init(k);fmpz_set_si(k,4);
 	fq_poly_t Psi1;fq_poly_init(Psi1,ctx);
 	Psi(a,b,k,Psi1,ctx);
 	fq_poly_print_pretty(Psi1,var,ctx);

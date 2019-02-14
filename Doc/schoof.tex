@@ -5,7 +5,10 @@
 \usepackage{graphicx}
 \usepackage[colorinlistoftodos]{todonotes}
 \usepackage[margin=1in,letterpaper]{geometry}
-
+\usepackage{enumitem}
+\renewcommand\labelitem{\raisebox{0.5ex}{\tiny$\bullet$}}
+\usepackage{algorithm}
+\usepackage[noend]{algpseudocode}
 \usepackage{lmodern}
 \usepackage{amssymb}
 \usepackage{mathrsfs}
@@ -13,7 +16,6 @@
 \usepackage{pifont}
 \usepackage{enumitem}
 \usepackage{color}
-\usepackage{algorithm2e}
 \usepackage{stmaryrd}
 \usepackage{graphicx}
 \usepackage{verbatim}
@@ -23,21 +25,43 @@
 \usepackage{fancyhdr}
 \usepackage{listings}
 \usepackage{hyperref}
+\usepackage{algorithm}
+\usepackage[noend]{algpseudocode}
 
+
+\newtheorem{lem}{Lemme}
+\newtheorem{prop}{Proposition}
+\newtheorem{theo}{Théorème}
+\newtheorem{defi}{Définition}
+\newtheorem{coro}{Corollaire}
+\newtheorem{propr}{Propriétés}
+\newtheorem{rem}{Remarque}
+\newtheorem{ex}{Exemple}
+\newtheorem{rap}{Rappel}
+\newtheorem{Bilan}{Bilan}
+\newtheorem{app}{\color{gris}Application}
+\newtheorem{nota}{\color{cyan}Notation}
 
 \newcommand{\Z}{\mathbb{Z}}
-\newcommand{\F}{\mathbb{F}}
+\newcommand{\F}{\mathbb{F}_q}
 \newcommand{\N}{\mathbb{N}}
 \newcommand{\R}{\mathbb{R}}
+\newcommand{\K}{\mathbb{K}}
+\newcommand{\E}{\mathcal{E}}
+\newcommand{\O}{\mathcal{O}}
+\newcommand{\q}{\bar{q}}
+\definecolor{turquoise}{rgb}{0.19, 0.84, 0.78}
+\definecolor{cobalt}{rgb}{0.0, 0.28, 0.67}
+\definecolor{calpolypomonagreen}{rgb}{0.12, 0.3, 0.17}
 
 \begin{document}
-
+%\pagestyle{fancy}
 \begin{titlepage}
 
 \newcommand{\HRule}{\rule{\linewidth}{0.5mm}} % Defines a new command for the horizontal lines, change thickness here
 
-\center 
- 
+\center
+
 %----------------------------------------------------------------------------------------
 %	HEADING SECTIONS
 %----------------------------------------------------------------------------------------
@@ -53,24 +77,24 @@
 \HRule \\[0.4cm]
 { \huge \bfseries Algorithme de comptage de points de Schoof}\\[0.1cm] % Title of your document
 \HRule \\[1.5cm]
- 
+
 %----------------------------------------------------------------------------------------
 %	AUTHOR SECTION
 %----------------------------------------------------------------------------------------
 
 \begin{minipage}{0.5\textwidth}
-\begin{flushleft} 
+\begin{flushleft}
 \emph{Réalisé par:}\\
 Abdourahman \textsc{Saleh Ibrahim}\\
-Abdessamad \textsc{Fazzat} 
+Abdessamad \textsc{Fazzat}
 
 \end{flushleft}
 \end{minipage}
 ~
 \begin{minipage}{0.4\textwidth}
-\begin{flushright} 
+\begin{flushright}
 \emph{Supervisé par:} \\
-Prof. Luca \textsc{De Feo} 
+Prof. Luca \textsc{De Feo}
 \end{flushright}
 \end{minipage}\\[2cm]
 
@@ -83,13 +107,14 @@ Prof. Luca \textsc{De Feo}
 %	LOGO SECTION
 %----------------------------------------------------------------------------------------
 
-\includegraphics[scale=0.15]{versailles.jpg} 
+\includegraphics[scale=0.15]{versailles.jpg}
 %----------------------------------------------------------------------------------------
 
 
 \vfill %
 
 \end{titlepage}
+
 \tableofcontents
 \newpage
 
@@ -97,56 +122,371 @@ Prof. Luca \textsc{De Feo}
 Résumé du projet
 \end{abstract}
 
-\section{Introduction}
-Introduction aux courbes elliptiques et application à la cryptographie
-
 \section{Courbes elliptiques}
-    \subsection{Courbes elliptiques}
-    
-    \subsection{Loi de groupe}
-    
-    \subsection{Endomorphisme de Frobenius}
-    
-    \subsection{Nombre de points}
-\section{Arithmétique dans un corps fini}
-    \subsection{Algorithme d'Euclide}
-    \subsection{Algorithme d'Euclide étendu}
-    \subsection{Inversion modulaire}
-    \subsection{Exponentiation modulaire}
-    \subsection{Racine carrée modulaire}
-    \subsection{Théorème Chinois des restes}
+\subsection{Définitions}
+\begin{defi}(Silverman)\\
+	Une courbe elliptique $\mathcal{E}$ est une variété projective lisse de genre 1.
+\end{defi}
+C'est un ensemble de de couples $(x,\,y)$ vérifiant une certaine équation, auquel on ajoute un point $\mathcal{O}$, ce point est considéré comme point à l'infini dans le plan projectif.
+\begin{defi}(Blake, Seroussi)\\
+	Une courbe elliptique $\mathcal{E}$ sur un corps $\mathbb{K}$ est définie par une équation de la forme: $$y^2+ a_1xy+a_3y = x^3+a_2x^2+a_4x+a_6$$ où les $a_i \in \mathbb{K}$ sont des constantes.
+\end{defi}
+Cette équation, dite de \textit{Weierstrass}, peut être réduite selon la caractéristique du corps commutatif $\mathbb{K}$ dans lequel elle est définie.
+
+\begin{lem}(Washington)
+	En caractéristique différente de $2$ et $3$, à l'aide d'un changement de variables, on peut se ramener à une équation de la forme:
+	$$y^2=x^3+ax+b.$$
+\end{lem}
+
+\begin{defi}
+	Soit $\mathbb{K}$ un corps de caractéristique différente de $2$ et $3$.
+	Une courbe elliptique est l'ensemble:
+	$$\mathcal{E} =
+	\{(x,\,y)\in \mathbb{\bar K}\times\mathbb{\bar K}
+	|y^2 = x^3+ax+b\}\cup\{\mathcal{O}\}$$
+	Avec $\Delta=4a^3+27b^2 \neq 0.$ son discriminant.
+\end{defi}
+La condition $\Delta \neq 0$ signifie que le polynôme $x^3+ax+b$ n'a pas de racine double et donc que la courbe est lisse.
+
+Dans toute la suite, nous considérant le corps $\mathbb{K}$ de caractéristique differente de $2$ et $3$, pour pouvoir représenter une courbe elliptique avec une équation de \textit{Weierstrass} réduite.
+\subsection{Loi de groupe}
+\begin{prop}
+	Soit $\mathcal{E}$ définie sur $\mathbb{K}$, $P$ et $Q$ deux points de $\mathcal{E}$, la droite $(PQ)$(ou la tangente à $\mathcal{E}$ si $P=Q$) et $R$ le troisième point d'intersection de $(PQ)$ avec la courbe.
+	Le point $P+Q \in \mathcal{E(\mathbb{K})}$ est défini comme étant le deuxième point d'intersection de $\mathcal{E}$ avec la droite verticale passant par $R$.\\
+\end{prop}
+$\mathcal{E(\mathbb{K})}$ muni de cette loi de composition est un groupe commutatif, d'élément neutre $\mathcal{O}$.\\
+
+	On considère la courbe elliptique $\mathcal{E}: y^2 = x^3+ax+b$ et Soient $P=(x_{P},y_{P})$, $Q=(x_{Q},y_{Q})$ et $R=(x_{R},y_{R})$ des point de $\mathcal{E}$ tels que $P,\, Q \neq \mathcal{O}$ et $P+Q=R$.\\
+On distingue trois cas possibles:\\
+\begin{enumerate}
+   \item Si $x_{P} = x_{Q}$ et $y_{P} \neq y_{Q}$: $P$ et $Q$ sont sur la même droite d'équation $x=c$ et $R=\mathcal{O}$;\\
+
+   \item Si $x_{P} = x_{Q}$ et $y_{P} = y_{Q}$: Si $y_{P}=0$ alors $R=\mathcal{O}$, sinon $x_R=m^2-2x_P$, $y_R=m(x_P-x_R)-y_P$ où $m = (3x_{P}^{2}+a)/2y_{P}$;\\
+   \item Si $x_{P} \neq x_{Q}$: $x_R=m^2-x_P-x_Q$, $y_R=m(x_P-x_R)-y_P$ où $m = (y_{Q}-y_{P})/(x_{Q}-x_{P})$.
+\end{enumerate}
+
+\begin{rem}
+Si $P=(x_P,y_P) \in \mathcal{E(\mathbb{K})}$, $-P$ est le point d'intersection de la droite $x=x_P$ et $\mathcal{E}$.
+\end{rem}
+\subsection{Points de $n$-torsion}
+\begin{defi}
+	Soit $\mathcal{E}$ une courbe elliptique définie sur $\mathbb{K}$ et $n\in \Z$.
+	Le groupe de $n$-torsion de $\E$ est l'ensemble: $$\mathcal{E}[n]=\{P\in \E(\bar\K)|nP = \cal O\}$$
+\end{defi}
+C'est le noyau de l'isogénie de multiplication par $n$.
+	Comme le noyau d'une isogénie est toujours fini, $\E[n]$ contient un nombre fini de points pour tout $n$.
+\begin{ex}
+\begin{itemize}
+\newline
+	\item[$\bullet$] $\E[1]$ est le sous-groupe réduit à $\cal O$;
+	\item[$\bullet$] $\E[2]$ est constitué des points d'ordre $2$, i.e. les points spéciaux de la courbe.$$\E[2]=\{P_{\alpha_1}, P_{\alpha_2}, P_{\alpha_3}, \cal O \}$$ où $P_{\alpha_i}=(\alpha_i, 0)$.
+\end{itemize}
+\end{ex}
+
+Soit $\K$ un corps de caractéristique $p$.
+\begin{theo}
+	Pour tout entier $n$ non multiple de $p$,$$Card(\E[n])=n^2$$
+\end{theo}
+\begin{prop}
+	Pour tout entier $n$ non multiple de $p$, le groupe $\E[n]$ est isomorphe au produit direct $\Z/n\Z \times \Z/n\Z$.
+\end{prop}
+	En particulier, $\E[p]$ est soit isomorphe à $\Z/p\Z$, soit égale à
+	${\cal O}$.\\
+	Si $\E[p]={\cal O}$, on dit que la courbe est supersingulière.
+
+\section{Courbles elliptiques sur un corps fini}
+	Soit $\F$ le corps à $q=p^d$ éléments et $\bar\F$ sa clôture algébrique.
+\begin{theo}(Cassel)\\
+	Soit $\E$ une courbe elliptique sur $\F$. Alors:
+\begin{itemize}
+\newline
+	\item[$\bullet$] soit $\E(\F)$ est un groupe cyclique;
+	\item[$\bullet$] soit il est isomotphe à $\Z/d_1\Z \times \Z/d_2\Z$ avec $d_1|d_2$.
+\end{itemize}
+\end{theo}
+
+	\subsection{Endomorphisme de Frobenius}
+   Soit $\E : y^2=x^3+ax+b$ une courbe elliptique sur $\F$.
+\begin{defi}
+	Pour un point $P=(x_P,\,y_P)$ de $\E$, le point $(x_{P}^q,\,y_{P}^q) \in \E$, donc l'application $\phi_q :(x,\,y) \mapsto (x^q,\,y^q)$ et $\cal O \mapsto \cal O$ est un morphisme de $\E$ dans $\E$.
+\end{defi}
+L'ensemble des points de $\E(\F)$ fixés par $\phi_q$ est exactement $\E(\F)$, formellement: $$\ker(\phi_q - [1]) = \E(\F)$$
+
+\begin{rem}
+Comme $y^2=x^3+ax+b$, on a $y^q = y\timesy^{q-1} = y(x^3+ax+b)^{(q-1)/2}$, on peut donc exprimer $\phi_q(x,\,y)$ sous sa forme réduite: $$\phi_q(x,\,y) = (x^q,\,y(x^3+ax+b)^{(q-1)/2})$$
+\end{rem}
+\begin{propr}
+\begin{itemize}
+    \item[$\bullet$] $\phi_q$ est une isogénie inséparable;
+    \item[$\bullet$] $\phi_q(x,\,y) = (x,\,y) \Longleftrightarrow (x,\,y)\in \E(\F) $;
+    \item[$\bullet$] $\phi_q ^n(x,\,y)=(x,\,y) \Longleftrightarrow (x,\,y)\in \E(\F_{^n})$ où $\phi_q ^n(x,\,y)=(x^{q^n},\,y^{q^n})$;
+    \item[$\bullet$] $\#\ker(\phi_q - [1]) = deg(\phi_q -[1])$.
+\end{itemize}
+\end{propr}
+$\phi_q - [1]$ est une isogénie séparable de $\E$, de degré égale à l'ordre du groupe $\E(\F)$
+    \subsection{Trace et théorème de Hasse}
+La trace $t$ d'une courbe elliptique $\E$ est un paramètre lié à l'ordre du groupe $\E(\F)$.
+\begin{defi}
+    La trace de $\E(\F)$ est l'unique entier $$t = q+1-\#\E(\F)$$
+\end{defi}
+
+\begin{prop}
+    Soit $t$ la trace de $\E$. Pour tout entier $n$ non multiple de $p$, la restriction de
+    $$\phi_q ^2 -[t]\circ\phi_q + [q]$$
+    au groupe $\E[n]$ est l'isogénie nulle $P\mapsto \cal O$.
+\end{prop}
+Appliqué à un point $P=(x,\,y)\in\E(\F)$, on a $(x^{q^2},\,y^{q^2}) -t(x^q,\,y^q) + q(x,\,y)=\cal O$.
+\newline
+On définit le polynôme caractéristique de Frobinius par $X^2-tX+q$ en écrivant la matrice associée à $\phi_q$ dans une base de $\E[n]$,
+\[
+\Phi_q=
+  \begin{bmatrix}
+    a & c \\
+    b & d
+  \end{bmatrix}
+\]
+de polynôme caractéristique $X^2-(a+d)X+\det(\Phi_q)$ avec $a+d = t$ modulo $n$ et $\det(\Phi_q)=q$ modulo $n$
+
+\begin{theo}(Hasse)
+\newline
+    La trace $t$ de $\E(\F)$ est telle que: $$-2\sqrt{q}\leq t \leq 2\sqrt{q}$$
+\end{theo}
+Autrement dit, le nombre de points de la courbe vérifie: $$q+1-2\sqrt{q}\leq \#\E(\F) \leq q+1+2\sqrt{q}$$
+
+    \subsection{Polynômes de division}
+\begin{defi}
+    Pour tout entier $n$ non nul, le polynôme de division $\psi_n \in \F(\E)$ est défini par son coefficient dominant $n$ et diviseur $div(\psi_n)=(\E[n]-n^2 (\cal O)$.
+\end{defi}
+D'après ce qui précède, $\#\E[n]=n^2$ et comme $(\E[n]-n^2 (\cal O)$ est principal, on peu affirmer que c'est le diviseur d'une fonction sans pôles(autres que $\cal O$), cette fonction est donc un polynôme.
+\newline
+On définie les premiers polynômes de division comme suit:
+\begin{itemize}
+    \newline
+    \item[$\bullet$] $\psi_0 = 0$ car $\E[0]=\E$;
+    \item[$\bullet$] $\psi_1 = 1$ car $\E[1]={\cal O}$;
+    \item[$\bullet$] $\psi_2 = 2y$ (c.f. Exemple 1);
+    \item[$\bullet$] $\psi_3 = 3x^4+6ax^2+12bx-a^2$;
+    \item[$\bullet$] $\psi_4 = 4y(x^6+5ax^4+20bx^3-5ax^2-4abx-8b^2-a^3$.
+\end{itemize}
+Le reste est construit par récurrence sur $n$.
+\begin{itemize}
+    \newline
+    \item[$\bullet$] $\psi_{2n+1}=\psi_{n+2}\psi_n ^3 - \psi_{n-1}\psi_{n+1} ^3$ Pour $n\geq2$;
+    \item[$\bullet$] $\psi_{2n}=\frac{\psi_n}{2y}(\psi_{n+2}\psi_{n-1} ^2 - \psi_{n-2}\psi_{n+1} ^2)$ Pour $n\geq3$
+\end{itemize}
+Avec la convention $\psi_{-n}=-\psi_{n}$ pour tout $n$.
+\newline
+Si $n$ est impair: $$\psi_n (x,\,y)=n\prod_{P\in \E} (x-x_P)$$
+$\psi_n (x,\,y)$ peut être réduit sous la forme d'un polynôme $f_n(x)\in \F[x]$ , de degré $(n^2 -1)/2$
+Si $n$ est pair: impair: $$\psi_n (x,\,y)=ny\prod_{P\in \E} (x-x_P)$$
+et on peut écrire $\psi_n (x,\,y) = yf_n(x)$ avec $f_n$ de degré $(n^2 -4)/2$
+\newline
+En reprenant les deux relations de récurrence et en distinguant les cas $n$ pair et impair, on obtient:\\
+\begin{itemize}
+    \item[$\bullet$] Cas $n$ pair: $f_{2n+1}=y^4f_{n+2}f_n ^3 - f_{n-1}f_{n+1} ^3$.\\
+    De même, en divisant par $y$: $f_{2n}=\frac{f_n}{2}(f_{n+2}f_{n-1} ^2 - f_{n-2}f_{n+1} ^2)$
+    \item[$\bullet$] Cas $n$ impair: $f_{2n+1}=f_{n+2}f_n ^3 - y^4f_{n-1}f_{n+1} ^3$.\\
+    Et $f_{2n}=\frac{f_n}{2}(f_{n+2}f_{n-1} ^2 - f_{n-2}f_{n+1} ^2)$
+\end{itemize}
+Puis on remplace $y^2$ par $x^3+ax+b$.
+\begin{prop}(Caractérisation des points de $n$-torsion)
+\newline
+Soit $P=(x,\,y)$ un point ordinaire($y\neq 0$) de $\E(\F)$, on dit que $P$ est un point de $n$-torsion si et seulement si $\psi_n(P)=0$.
+Autrement dit, si et seulement si $f_n(x)=0$.
+\end{prop}
+\begin{rem}
+Les points spéciaux $(\alpha,\,0)$ sont des points de $n$-torsion dans le cas $n$ pair.
+\end{rem}
+
+\section{Algorithme de Schoof}
+
+
+\subsection{Principes de l'algorithme}
+Le théorème de Hasse nous donne que la trace $t$ dont dépend le cardinal de la courbe est inférieure en valeur absolue à $ 2 \sqrt{q} $. C'est donc un élément de $ \Z/M \Z $ où M est un entier supérieur à $ 4 \sqrt{q} $ et premier à la caractéristique.
+\newline
+\newline
+Pour le calculer éfficacement, on commence par déterminer sa valeur modulo les premiers l divisant M, puis on le reconstitue modulo M à l'aide du théorème des restes chinois. Tavailler modulo l revient à se restreindre aux points de l-torsion car dans ce cas on a $ (l+1)P = P $ c'est à dire $ lP = \mathcal{O} $.
+\newline
+\newline
+La trace est l'entier t unique modulo M vérifiant
+$$ \forall P \in \E(\F),\ \phi_q^{2}(P)+qP = t \phi_q(P). $$
+\newline
+\newline
+Dans le cas particulier $ \mathbf{l=2} $, on a $ \#\E(\F) = q+1-t = t\ mod\ 2 $ car $q$ est impair.\\ Donc $t=0$ modulo $2$ est équivalent à $ \#\E(\F) = 0\ mod\ 2 $ c'est à dire que $\E(\F)$ possède un point d'ordre $2$ (donc) de la forme $(x,\,0)$.
+Du coup $t=0$ modulo $2$ si et seulement si $ x^3+ax+b $ s'annule sur $\F$.
+Ce qui se teste en calculant le $ pgcd(x^3+ax+b,x^{q}-x) $. S'il est différent de 1,\\
+$t=0$ modulo $2$ sinon, $t=1$ modulo $2$.
+\newline
+\newline
+On note $k$ le représentant de $q$ modulo $l$ et on remarque que $\psi_{l}(x,y)=f_{l}(x)$. Pour un point $P=(x,\,y)$ de $l$-torsion sur $\E(\F)$, $\phi^2(P)=(x^{q^2},y^{q^2})$ et $$kP=\left(x-\frac{\psi_{k-1}\psi_{k+1}}{\psi_{k}^2},\frac{\psi_{k+2}\psi_{k-1}^2-\psi_{k-2}\psi_{k+1}^2}{4y\psi_{k}^3}\right)$$
+\newline
+\textbf{1er cas:} il existe un point $P$ tel que $\phi^2(P)= \pm kP$\\
+Cela est vrai si les deux points ont le même abscisse c'est à dire
+$$ x^{q^2} = x-\frac{\psi_{k-1}\psi_{k+1}}{\psi_{k}^2}\ mod\ f_{l} \Leftrightarrow (x^{q^2}-x)\psi_{k}^2+\psi_{k-1}\psi_{k+1} = 0\ mod\ f_{l} $$
+Si $k$ est pair, on a $\psi_{k}=yf_{k}$, alors:
+$$ (x^{q^2}-x)\psi_{k}^2+\psi_{k-1}\psi_{k+1} = (x^{q^2}-x)y^2f_{k}^2+f_{k-1}f_{k+1} = (x^{q^2}-x)(x^3+ax+b)f_{k}^2+f_{k-1}f_{k+1}\ (1) $$
+Et si $k$ est impair, on a:
+$$ (x^{q^2}-x)\psi_{k}^2+\psi_{k-1}\psi_{k+1} = (x^{q^2}-x)f_{k}^2+y^2f_{k-1}f_{k+1} = (x^{q^2}-x)f_{k}^2+(x^3+ax+b)f_{k-1}f_{k+1}\ (2) $$
+Si le pgcd de ce polynôme avec $f_{l}$ n'est pas 1, on est dans le cas présent sinon on passe au 2ème cas.
+\newline
+\newline
+Si $\phi^2(P)=-kP$, alors $\phi^2(P)+kP = \mathcal{O}$ donc t=0 mod l et réciproquement.
+\newline
+\newline
+Si $\phi^2(P)=kP$, alors par le polynôme caractéristique de $\phi$: $2kP = t \phi(P).$
+$$\phi(P) = \frac{2k}{t}P \Rightarrow \phi^2(P) = kP = \frac{4k^2}{t^2} \Rightarrow (t^2-4k)P = \mathcal{O} \Rightarrow t^2-4k = 0\ mod\ l $$
+Alors $k = ( \frac{t}{2} )^2 := w^2\ mod\ l $ et $\phi(P) = \pm wP$.\\
+On teste l'abscisse:
+$$ (x^{q}-x)(x^3+ax+b)f_{w}^2+f_{w-1}f_{w+1},\ si\ w\ est\ pair\ \ (3) $$
+$$ (x^{q}-x)f_{w}^2+(x^3+ax+b)f_{w-1}f_{w+1},\ sinon\ \ (4) $$
+S'il est premier avec $f_{l}$ alors t=0 mod l.\\
+Sinon on passe l'ordonnée pour départager les deux racines carrées.\\
+Si w est pair:
+$$ 4y^{q+1}\psi_{w}^3-\psi_{w+2}\psi_{w-1}^2+\psi_{w-2}\psi_{w+1}^2 = 4y^{q+1}y^3 f_{w}^3-yf_{w+2}f_{w-1}^2+yf_{w-2}f_{w+1}^2 $$ $$ = y(4y^{q+3}f_{w}^3-f_{w+2}f_{w-1}^2+f_{w-2}f_{w+1}^2) $$ $$ = y(4(x^3+ax+b)^{(q+3)/2}f_{w}^3-f_{w+2}f_{w-1}^2+f_{w-2}f_{w+1}^2) $$
+Il suffit de tester $ 4(x^3+ax+b)^{(q+3)/2}f_{w}^3-f_{w+2}f_{w-1}^2+f_{w-2}f_{w+1}^2\ \ (5) $, car l'ordonnée des points des $l$-torsion est non nulle (puisque $l$ n'est pas 2).\\
+Si w est impair:
+$$ 4y^{q+1}\psi_{w}^3-\psi_{w+2}\psi_{w-1}^2+\psi_{w-2}\psi_{w+1}^2 = 4y^{q+1}f_{w}^3-y^2f_{w+2}f_{w-1}^2+y^2f_{w-2}f_{w+1}^2 $$ $$ = y^2(4y^{q-1}f_{w}^3-f_{w+2}f_{w-1}^2+f_{w-2}f_{w+1}^2) $$ $$ = y^2(4(x^3+ax+b)^{(q-1)/2}f_{w}^3-f_{w+2}f_{w-1}^2+f_{w-2}f_{w+1}^2) $$
+Il suffit de tester $ 4(x^3+ax+b)^{(q-1)/2}f_{w}^3-f_{w+2}f_{w-1}^2+f_{w-2}f_{w+1}^2\ \ (6) $.\\
+Si le pgcd avec $f_l$ est 1, alors $ t=-2w\ mod\ l$ sinon $ t=2w\ mod\ l $.
+\newline
+\newline
+\textbf{2ème cas:} Pour tout point P $\phi^2(P) \neq \pm kP$\\
+On calcule $\phi^2(P)+kP$ avec la formule de la somme de deux points d'abscisses différentes.
+$$ \phi^2(P)+kP = \left(-x^{q^2}-x+\frac{\psi_{k-1}\psi_{k+1}}{\psi_{k}^2}+\mu^2, \left(2x^{q^2}+x-\frac{\psi_{k-1}\psi_{k+1}}{\psi_{k}^2}-\mu^2\right)\mu-y^{q^2}\right) $$ $$ avec\ \mu=\frac{\psi_{k+2}\psi_{k-1}^2-\psi_{k-2}\psi_{k+1}^2-4y^{q^2+1}\psi_{k}^3}{4y\psi_{k}((x-x^{q^2})\psi_{k}^2-\psi_{k-1}\psi_{k+1})} := \frac{\alpha}{\beta} $$
+Pour tout $1 \leq j \leq \frac{l-1}{2}$, on calcule:
+$$ j\phi(P) = \phi(jP)= \left(\left(x-\frac{\psi_{j-1}\psi_{j+1}}{\psi_{j}^2}\right)^q,\left(\frac{\psi_{j+2}\psi_{j-1}^2-\psi_{j-2}\psi_{j+1}^2}{4y\psi_{j}^3}\right)^q\right) $$ Comme la caractéristique divise q, on obtient $$  j\phi(P) = \left(x^q-\frac{(\psi_{j-1}\psi_{j+1})^q}{\psi_{j}^{2q}},\frac{(\psi_{j+2}\psi_{j-1}^2-\psi_{j-2}\psi_{j+1}^2)^q}{4y\psi_{j}^{3q}}\right)$$
+$\phi^2(P)+kP$ aura à fortiori la même abscisse qu'un des $j\phi(P)$. A ce moment-là, on compare les ordonnées si elles sont aussi les mêmes modulo $f_l$ alors $j$ est notre trace sinon c'est $-j$. Ainsi tous les $j$ de $\Z/l\Z $ sont testés.
+
+On note $absc$ le polynôme numérateur de la différence des abscisses et $ordo$ celui des ordonnées.
+$$ absc = \gamma_{1}\psi_{j}^{2q}+\delta_{1}(\psi_{j-1}\psi_{j+1})^q,\ avec\ $$
+$$ \gamma_{1}=(\psi_{k-1}\psi_{k+1}-\psi_{k}^2(x^{q^2}+x^q+x))\beta^2+\psi_{k}^2\alpha^2,\ et\ \delta_{1} = \psi_{k}^2\beta^2. $$
+$$ ordo = \gamma_{2}\psi_{j}^{3q}-\delta_{2}(\psi_{j+2}\psi_{j-1}^2-\psi_{j-2}\psi_{j+1}^2)^q,\ avec $$ $$ \gamma_{2} = 4y^q(\alpha\beta^2(\psi_{k}^2(2x^{q^2}+x)-\psi_{k-1}\psi_{k+1})-\psi_{k}^2(\alpha^3+\beta^3y^{q^2})),\ et\ \delta_{2} = \beta^3\psi_{k}^2 $$
+\
+Pour continuer à manipuler des polynômes univariés, on distingue des plusieurs cas selon la parité de $k$ et $j$.
+\newline
+\newline
+Si $k$ est pair:
+$$ \alpha = \psi_{k+2}\psi_{k-1}^2-\psi_{k-2}\psi_{k+1}^2-4y^{q^2+1}\psi_{k}^3 = yf_{k+2}f_{k-1}^2-yf_{k-2}f_{k+1}^2-4y^{q^2+1}y^3f_{k}^3$$ $$ = y(f_{k+2}f_{k-1}^2-f_{k-2}f_{k+1}^2-4y^{q^2+3}f_{k}^3) = y(f_{k+2}f_{k-1}^2-f_{k-2}f_{k+1}^2-4(x^3+ax+b)^{(q^2+3)/2}f_{k}^3) = y\alpha_x $$
+\newline
+$$ \beta = 4y\psi_{k}((x-x^{q^2})\psi_{k}^2-\psi_{k-1}\psi_{k+1}) = 4yyf_{k}((x-x^{q^2})y^2f_{k}^2-f_{k-1}f_{k+1}) $$ $$ = 4(x^3+ax+b)f_{k}((x-x^{q^2})(x^3+ax+b)f_{k}^2-f_{k-1}f_{k+1}). $$
+\newline
+$$ \gamma_{1} = (\psi_{k-1}\psi_{k+1}-\psi_{k}^2(x^{q^2}+x^q+x))\beta^2+\psi_{k}^2\alpha^2 = (f_{k-1}f_{k+1}-y^2f_{k}^2(x^{q^2}+x^q+x))\beta^2+y^2f_{k}^2y^2\alpha_{x}^2 $$ $$ = (f_{k-1}f_{k+1}-(x^3+ax+b)f_{k}^2(x^{q^2}+x^q+x))\beta^2+(x^3+ax+b)^2f_{k}^2\alpha_{x}^2 $$
+\newline
+$$ \delta_{1} = \psi_{k}^2\beta^2 = y^2f_{k}^2\beta^2 = (x^3+ax+b)f_{k}^2\beta^2. $$
+\newline
+$$ \gamma_{2} = 4y^q(\alpha\beta^2(\psi_{k}^2(2x^{q^2}+x)-\psi_{k-1}\psi_{k+1})-\psi_{k}^2(\alpha^3+\beta^3y^{q^2})) $$ $$ = 4y^q(y\alpha_x\beta^2(y^2f_{k}^2(2x^{q^2}+x)-f_{k-1}f_{k+1})-y^2f_{k}^2(y^3\alpha_{x}^3+\beta^3y^{q^2})) $$ $$ = 4y^{q+1}(\alpha_x\beta^2(y^2f_{k}^2(2x^{q^2}+x)-f_{k-1}f_{k+1})-y^2f_{k}^2(y^2\alpha_{x}^3+\beta^3y^{q^2-1})) $$ $$ = 4(x^3+ax+b)^{(q+1)/2}(\alpha_x\beta^2((x^3+ax+b)f_{k}^2(2x^{q^2}+x)-f_{k-1}f_{k+1})-(x^3+ax+b)f_{k}^2((x^3+ax+b)\alpha_{x}^3 $$ $$ +\beta^3(x^3+ax+b)^{(q^2-1)/2})) $$
+\newline
+$$ \delta_{2} = \beta^3\psi_{k}^2 = \beta^3y^2f_{k}^2 = \beta^3(x^3+ax+b)f_{k}^2 $$
+Si de plus $j$ est pair:
+$$ absc = \gamma_{1}\psi_{j}^{2q}+\delta_{1}(\psi_{j-1}\psi_{j+1})^q = \gamma_{1y^{2q}}f_{j}^{2q}+\delta_{1}(f_{j-1}f_{j+1})^q = \gamma_{1}(x^3+ax+b)^{q}f_{j}^{2q}+\delta_{1}(f_{j-1}f_{j+1})^q $$
+$$ ordo = \gamma_{2}\psi_{j}^{3q}-\delta_{2}(\psi_{j+2}\psi_{j-1}^2-\psi_{j-2}\psi_{j+1}^2)^q = \gamma_{2}y^{3q}f_{j}^{3q}-\delta_{2}y^q(f_{j+2}f_{j-1}^2-f_{j-2}f_{j+1}^2)^q $$ $$ = y(\gamma_{2}y^{3q-1}f_{j}^{3q}-\delta_{2}y^{q-1}(f_{j+2}f_{j-1}^2-f_{j-2}f_{j+1}^2)^q) $$ $$ = y(\gamma_{2}(x^3+ax+b)^{(3q-1)/2}f_{j}^{3q}-\delta_{2}(x^3+ax+b)^{(q-1)/2}(f_{j+2}f_{j-1}^2-f_{j-2}f_{j+1}^2)^q) $$
+et si $j$ est impair:
+$$ absc = \gamma_{1}\psi_{j}^{2q}+\delta_{1}(\psi_{j-1}\psi_{j+1})^q = \gamma_{1}f_{j}^{2q}+\delta_{1}(x^3+ax+b)^q(f_{j-1}f_{j+1})^q $$
+$$ ordo = \gamma_{2}f_{j}^{3q}-\delta_{2}(x^3+ax+b)^q(f_{j+2}f_{j-1}^2-f_{j-2}f_{j+1}^2)^q $$
+Si $k$ est impair:
+$$ \alpha = \psi_{k+2}\psi_{k-1}^2-\psi_{k-2}\psi_{k+1}^2-4y^{q^2+1}\psi_{k}^3 = (x^3+ax+b)(f_{k+2}f_{k-1}^2-f_{k-2}f_{k+1}^2)-4(x^3+ax+b)^{(q^2+1)/2}f_{k}^3 $$
+\newline
+$$ \beta = 4y\psi_{k}((x-x^{q^2})\psi_{k}^2-\psi_{k-1}\psi_{k+1}) = 4yf_{k}((x-x^{q^2})f_{k}^2-(x^3+ax+b)f_{k-1}f_{k+1}) = y\beta_{x} $$
+\newline
+$$ \gamma_{1} = (\psi_{k-1}\psi_{k+1}-\psi_{k}^2(x^{q^2}+x^q+x))\beta^2+\psi_{k}^2\alpha^2 $$ $$ = ((x^3+ax+b)f_{k-1}f_{k+1}-f_{k}^2(x^{q^2}+x^q+x))(x^3+ax+b)\beta_{x}^2+\psi_{k}^2\alpha^2 $$
+\newline
+$$ \delta_{1} = \psi_{k}^2\beta^2 = f_{k}^2(x^3+ax+b)\beta_{x}^2 $$
+\newline
+$$ \gamma_{2} = 4y^q(\alpha\beta^2(\psi_{k}^2(2x^{q^2}+x)-\psi_{k-1}\psi_{k+1})-\psi_{k}^2(\alpha^3+\beta^3y^{q^2})) $$ $$ = 4y(x^3+ax+b)^{(q-1)/2}(\alpha(x^3+ax+b)\beta_{x}^2(f_{k}^2(2x^{q^2}+x)-(x^3+ax+b)f_{k-1}f_{k+1})-f_{k}^2(\alpha^3+\beta_{x}^3(x^3+ax+b)^{(q^2+3)/2})) $$ $$ = y\gamma_{2,x} $$
+\newline
+$$ \delta_{2} = \beta^3\psi_{k}^2 = y(x^3+ax+b)\beta_{x}^3f_{k}^2 = y\delta_{2,x} $$
+Si de plus $j$ est pair:
+$$ absc = \gamma_{1}(x^3+ax+b)^qf_{j}^{2q}+\delta_{1}(f_{j-1}f_{j+1})^q $$
+$$ ordo = (x^3+ax+b)(\gamma_{2,x}(x^3+ax+b)^{(3q-1)/2}f_{j}^{3q}-\delta_{2,x}(x^3+ax+b)^{(q-1)/2}(f_{j+2}f_{j-1}^2-f_{j-2}f_{j+1}^2)^q) $$
+et si $j$ est impair:
+$$ absc = \gamma_{1}f_{j}^{2q}+\delta_{1}(x^3+ax+b)^q(f_{j-1}f_{j+1})^q $$
+$$ ordo = y(\gamma_{2,x}f_{j}^{3q}-\delta_{2,x}(x^3+ax+b)^q(f_{j+2}f_{j-1}^2-f_{j-2}f_{j+1}^2)^q) $$
+\newline
+\newline
+Dans les cas où $ ordo $ possède un $y$ en facteur(pair-pair, impair-impair), on l'identifie à $\frac{ordo}{y}$.
+
+\subsection{Pseudo-code}
+
+\begin{tabbing}
+\hspace{2cm}\=\hspace{2cm}\=\kill
+1. Si $ pgcd(x^3+ax+b,x^q-x) = 1 $ alors $ t \gets 1\ mod\ 2 $ sinon $ t \gets 0\ mod\ 2 $\\
+2. $ M \gets 2 $ et $ l \gets 3 $ \\
+3. Tant que $ M \leq 4\sqrt{q} $\\
+$ \ \ $ a. Si $ pgcd(\ (1)\ ou\ (2), f_l) \neq 1 $\\
+$ \ \ \ \ \ $ a'. Si $q$ n'est pas un résidu quadratique alors $ t \gets 0\ mod\ l $\\
+$ \ \ \ \ \ $ b'. Sinon si $ pgcd(\ (3)\ ou\ (4), f_l) \neq 1 $,\\
+$ \ \ \ \ \ \ \ \ $ a''. Si $ pgcd(\ (5)\ ou\ (6), f_l) \neq 1 $ alors $ t \gets 2w\ mod\ l $\\
+$ \ \ \ \ \ \ \ \ $ b''. Sinon $ t \gets -2w\ mod\ l $\\
+$ \ \ $ b. Pour $j$ allant de $ 1\ à\ (l-1)/2 $\\
+$ \ \ \ \ \ $ a'. Si $ pgcd(absc, f_l) \neq 1 $,\\
+$ \ \ \ \ \ \ \ \ $ a''. Si $ pgcd(ordo, f_l) \neq 1 $, alors $ t \gets j\ mod\ l $\\
+$ \ \ \ \ \ \ \ \ $ b''. Sinon $ t \gets -j\ mod\ l $\\
+$ \ \ $ c. $ M \gets M \times l $\\
+$ \ \ $ d. $ l \gets $ le premier suivant différent de $p$\\
+4. Calcul de t avec le TRC\\
+5. $ \#\E(\F) = q+1-t $\\
+\end{tabbing}
+
+\begin{algorithm}
+\caption{Schoof's algorithm}
+\begin{algorithmic}[1]
+\Procedure{Schoof}{$a,b,q$}
+\If{$ pgcd(x^3+ax+b,x^q-x) = 1 $}
+    \State $ t = 1\ mod\ l $
+\Else{}
+    \State $ t = 0\ mod\ l $
+\EndIf
+\State $ M \gets 2 $, $ l \gets 3 $
+\While{$ M \leq 4\sqrt{q} $}
+\If{$ pgcd(\ (1)\ ou\ (2), f_l) \neq 1 $}
+\If{$q$ n'est pas un résidu quadratique}
+\State $ t \gets 0\ mod\ l $
+\Else{}
+\If{$ pgcd(\ (3)\ ou\ (4), f_l) \neq 1 $}
+\If{$ pgcd(\ (5)\ ou\ (6), f_l) \neq 1 $}
+\State $ t \gets 2w\ mod\ l $
+\Else{}
+\State $ t \gets -2w\ mod\ l $
+\EndIf
+\EndIf
+\EndIf
+\EndIf
+\For{$j$ allant de $ 1\ à\ (l-1)/2 $}
+\If{$ pgcd(absc, f_l) \neq 1 $}
+\If{$ pgcd(ordo, f_l) \neq 1 $}
+\State $ t \gets j\ mod\ l $
+\Else{}
+\State $ t \gets -j\ mod\ l $
+\EndIf
+\EndIf
+\State $j \gets j+1$
+\EndFor
+\State $ M \gets M \times l $
+\State $ l \gets $ le premier suivant différent de $p$
+\EndWhile
+\State Calculer $t \mod M$ avec le TRC
+\State $ \#\E(\F) = q+1-t $ avec $|t|\leq 2\sqrt{q}$
+\EndProcedure
+\end{algorithmic}
+\end{algorithm}
+
+\section{Implémentation de l'algorithme de Schoof}
+    \subsection{Architecture du programme}
+    \subsection{Complexité}
 
 \section{Cryptographie sur les courbes elliptiques}
     \subsection{Problème du logarithme discret}
-    
-\section{Algorithme de Schoof}
-    \subsection{Polynômes de division}
-    \subsection{Points de torsion}
-    \subsection{Une borne sur le nombre de points: Théorème de Hasse}
-    \subsection{Algorithme de comtage de points de Schoof}
-    \subsection{Algorithme de Schoof-Elkies-Atkin}
-    
-\section{Implémentation de l'algorithme de Schoof}
-    \subsection{Complexité}
-    
+
 \newpage
 \newpage
 \begin{thebibliography}{99}
 \item R. Schoof. Elliptic curves over finite fields and the computation of square roots mod p. Mathematics of computation 44.170 (1985):483-494.
 
-\item R. Crandall, C. Pomerance. Prime numbers: a computational perspective. Vol. 182. Springer Science & Business Media, 2006. Côte 512.7 CRA. §7.5.2.
+\item R. Crandall, C. Pomerance. Prime numbers: a computational perspective. Vol. 182. Springer Science and Business Media, 2006. Côte 512.7 CRA. §7.5.2.
 
 \item I. F. Blake, G. Seroussi, N. Smart. Elliptic curves in cryptography. Vol. 265. Cambridge university press, 1999. Côte 005.82 BLA. Chapitre VII.
 
 \item P. Guillot: Introduction aux courbes elliptiques pour la cryptographie.
 \end{thebibliography}
-\end{document}
-
-\begin{abstract}
-Your abstract.
-\end{abstract}
-
-\section{Introduction}
-
 
 \end{document}

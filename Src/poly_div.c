@@ -37,7 +37,7 @@ elliptic_curve;
 void fq_init_curve(elliptic_curve E, fq_ctx_t ctx) {
 		fq_init(E.a, ctx);
 		fq_init(E.b, ctx);
-}
+} 
 
 /* Libération de la mémoire */
 void fq_clear_curve(elliptic_curve E, fq_ctx_t ctx) {
